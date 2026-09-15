@@ -168,7 +168,7 @@ visibility, capacity, and operator-approved test scope are established.
 
 ### F-008: Localhost management console
 - **Stability**: in-progress
-- **Evidence**: [Console runbook](docs/getting-started.md), [validation](docs/evidence/2026-09-15-rust-foundation.md). Preflight and offline reconstruction run; no production cache rebuild or signer management is implemented.
+- **Evidence**: [Management runbook](docs/management.md), [agent API](llms.txt), [validation](docs/evidence/2026-09-15-management.md), [router tests](crates/psky/src/server.rs), [settings tests](crates/psky/src/settings.rs). Saved configuration, peer health, tracked actions and bounded diagnostics run; no production cache rebuild or signer management is implemented.
 - **Description**: Inspect and operate a node from a local browser during the PoC.
 - **Properties**:
   - Bind admin routes to loopback by default and keep them off the public API listener.
@@ -176,10 +176,17 @@ visibility, capacity, and operator-approved test scope are established.
   - Show configured peers, sync lag, publication watermark, account binding, signer availability, and recent errors.
   - Provide explicit controls for preflight and cache reconstruction, with progress and cancellation semantics.
   - Never show private keys or authentication tokens in diagnostics or exports.
+  - Configure implemented node settings through a revisioned API and browser form, with no manual file edits.
+  - Mark pending listener changes and historical observations explicitly.
+  - Publish an agent guide for authentication, configuration, logs, actions, and safe debugging.
 - **Test Criteria**:
   - [ ] The console reports the actual A/B reconstruction progress and matching published head.
   - [x] Unauthenticated, foreign-origin, and invalid-Host management requests fail. [Router tests](crates/psky/src/server.rs)
   - [x] Admin routes are unreachable through the public listener. [Router tests](crates/psky/src/server.rs)
+  - [x] Settings survive restart; invalid or stale edits cannot silently replace them. [Settings tests](crates/psky/src/settings.rs)
+  - [x] Peer checks distinguish freshness, duplicate peers, and compatibility from reconstruction readiness. [Preflight tests](crates/psky-hypersnap/tests/preflight.rs)
+  - [x] Accepted actions survive client disconnect; overlap is rejected and shutdown drains work. [Router tests](crates/psky/src/server.rs)
+  - [x] Node event logs are bounded and available through authenticated cursor reads. [Journal](crates/psky/src/journal.rs)
   - [ ] Cache rebuild requires an explicit action and does not delete network data or signing material.
 
 ### F-009: Concurrency and failure correctness

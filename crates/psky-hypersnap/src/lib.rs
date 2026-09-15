@@ -9,6 +9,13 @@
 //! the node's reported network. That value is not independently authenticated:
 //! this crate does not verify Farcaster signatures or consensus.
 //!
+//! [`PreflightReport::compatible`] compares the reported version and network.
+//! [`PreflightReport::healthy`] also requires recent reported shard timestamps
+//! and distinct peer identifiers across all configured endpoints. Missing
+//! shard information is [`Freshness::Unknown`], never an assumed zero delay.
+//! A healthy preflight still does not prove synchronized histories: compare
+//! block hashes and retained historical reads before reconstruction testing.
+//!
 //! ```
 //! use psky_hypersnap::{Network, PreflightClient, PreflightConfig};
 //!
@@ -16,7 +23,7 @@
 //!     vec!["https://haatz.quilibrium.com".to_owned()],
 //!     Network::Mainnet,
 //!     None,
-//! )?;
+//! )?.with_max_block_delay_secs(30)?;
 //! let client = PreflightClient::new(config)?;
 //! # Ok::<(), psky_hypersnap::ConfigError>(())
 //! ```
@@ -24,7 +31,7 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-use std::{fmt, str::FromStr, time::Duration};
+use std::{collections::BTreeMap, fmt, str::FromStr, time::Duration};
 
 use reqwest::{Client, StatusCode, redirect::Policy};
 use serde::{Deserialize, Serialize};
@@ -39,6 +46,10 @@ pub const DEFAULT_MAX_RESPONSE_BYTES: usize = 256 * 1024;
 pub const MAX_RESPONSE_BYTES: usize = 1024 * 1024;
 /// Version whose HTTP response shape was inspected for this adapter.
 pub const SUPPORTED_VERSION: &str = "0.13.5";
+/// Default acceptable node-reported block delay, in seconds.
+pub const DEFAULT_MAX_BLOCK_DELAY_SECS: u64 = 30;
+/// Maximum configurable block-delay threshold, in seconds (one day).
+pub const MAX_BLOCK_DELAY_SECS: u64 = 86_400;
 
 /// Farcaster's network identifier, as reported in message data.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -96,6 +107,7 @@ pub struct PreflightConfig {
     test_fid: Option<u64>,
     timeout: Duration,
     max_response_bytes: usize,
+    max_block_delay_secs: u64,
 }
 
 impl PreflightConfig {
@@ -130,6 +142,7 @@ impl PreflightConfig {
             test_fid,
             timeout: Duration::from_secs(5),
             max_response_bytes: DEFAULT_MAX_RESPONSE_BYTES,
+            max_block_delay_secs: DEFAULT_MAX_BLOCK_DELAY_SECS,
         })
     }
 
@@ -158,6 +171,20 @@ impl PreflightConfig {
     /// Return the normalized endpoint URLs, which contain no credentials.
     pub fn endpoints(&self) -> impl Iterator<Item = &str> {
         self.endpoints.iter().map(Url::as_str)
+    }
+
+    /// Set the acceptable node-reported block delay, from 1 through 86,400 seconds.
+    ///
+    /// This controls freshness classification only. A recent block timestamp
+    /// does not establish history completeness, correct clocks, or finality.
+    pub fn with_max_block_delay_secs(mut self, seconds: u64) -> Result<Self, ConfigError> {
+        if !(1..=MAX_BLOCK_DELAY_SECS).contains(&seconds) {
+            return Err(ConfigError::new(
+                "maximum block delay must be 1 through 86400 seconds",
+            ));
+        }
+        self.max_block_delay_secs = seconds;
+        Ok(self)
     }
 }
 
@@ -226,6 +253,38 @@ pub enum Compatibility {
     Unknown,
 }
 
+/// Freshness of reported shard timestamps, separate from protocol compatibility.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Freshness {
+    /// Every expected shard has blocks and reports a delay within the threshold.
+    Fresh,
+    /// At least one shard reports a delay greater than the threshold.
+    Lagging,
+    /// Shard information is missing or a shard has no reported block yet.
+    Unknown,
+}
+
+impl Freshness {
+    fn from_info(info: &NodeInfo, max_block_delay_secs: u64) -> Self {
+        if info
+            .shard_infos
+            .iter()
+            .any(|shard| shard.block_delay_seconds > max_block_delay_secs)
+        {
+            return Self::Lagging;
+        }
+        // Hypersnap reports the block shard (0), followed by data shards 1..=N.
+        // The parser rejects duplicate and out-of-range shard IDs.
+        if info.shard_infos.len() as u64 != info.num_shards.saturating_add(1)
+            || info.shard_infos.iter().any(|shard| shard.max_height == 0)
+        {
+            return Self::Unknown;
+        }
+        Self::Fresh
+    }
+}
+
 /// A fixed, exportable failure classification. Response bodies are not retained.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -267,6 +326,32 @@ pub struct NodeInfo {
     /// Number of data shards reported by the node.
     pub num_shards: u64,
     /// Reported total message count, if supplied.
+    pub num_messages: Option<u64>,
+    /// Bounded reported peer identifier, if supplied. This is not authenticated.
+    pub peer_id: Option<String>,
+    /// Reported block and data shards. Empty means the response omitted them.
+    pub shard_infos: Vec<ShardInfo>,
+}
+
+/// A node's reported progress for one block or data shard.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ShardInfo {
+    /// Shard number: 0 is the block shard; data shards start at 1.
+    pub shard_id: u32,
+    /// Highest stored block number reported for this shard.
+    ///
+    /// Compare heights only for the same shard on the same network. Matching
+    /// heights do not establish matching block hashes or common history.
+    pub max_height: u64,
+    /// Difference between the node's clock and its latest block timestamp.
+    ///
+    /// The upstream [`get_info`] subtracts Farcaster timestamps measured in
+    /// [seconds]. This value is self-reported and does not prove full sync.
+    ///
+    /// [`get_info`]: https://github.com/farcasterorg/hypersnap/blob/main/src/network/server.rs
+    /// [seconds]: https://github.com/farcasterorg/hypersnap/blob/main/src/core/util.rs
+    pub block_delay_seconds: u64,
+    /// Number of stored messages reported for this shard, if supplied.
     pub num_messages: Option<u64>,
 }
 
@@ -311,10 +396,26 @@ pub struct NodeReport {
     pub endpoint: String,
     /// Inspected information response, when available and structurally valid.
     pub info: Option<NodeInfo>,
+    /// Whether `/v1/info` returned an HTTP status, including errors or redirects.
+    ///
+    /// Reachability alone does not imply a valid or compatible API response.
+    pub reachable: bool,
     /// Whether the reported version matches the inspected version.
     pub protocol: Compatibility,
     /// Whether a retained cast's reported network matches configuration.
     pub network: Compatibility,
+    /// Whether reported shard delays satisfy the configured threshold.
+    pub freshness: Freshness,
+    /// Whether this reported peer ID is unique across configured endpoints.
+    ///
+    /// False identifies duplicate peers. `None` means this or another node did
+    /// not report an identifier, preventing a complete comparison. Different
+    /// identifiers do not prove separate operators or failure domains.
+    pub peer_unique: Option<bool>,
+    /// Reported protocol/network match, fresh shard timestamps, and unique peer ID.
+    ///
+    /// This is an HTTP preflight result, not a claim of full sync or durability.
+    pub healthy: bool,
     /// Network reported by the optional retained cast, if recognized.
     pub observed_network: Option<Network>,
     /// Reported allocation for the optional FID, if the route was available.
@@ -337,6 +438,14 @@ pub struct PreflightReport {
     /// This only compares reported values. It does not authorize writes, prove
     /// signatures, establish common chain history, or establish durability.
     pub compatible: bool,
+    /// All configured endpoints meet the per-node HTTP preflight health checks.
+    pub healthy: bool,
+    /// Configured acceptable node-reported block delay, in seconds.
+    pub max_block_delay_seconds: u64,
+    /// Number of distinct reported peer identifiers, excluding missing values.
+    ///
+    /// This does not establish independent operators or verified identities.
+    pub distinct_peer_count: usize,
     /// Always false until the storage and reconstruction gates are proved.
     pub ready_for_reconstruction: bool,
     /// Result for each configured endpoint, in configuration order.
@@ -384,14 +493,41 @@ impl PreflightClient {
         let compatible = nodes.iter().all(|node| {
             node.protocol == Compatibility::Compatible && node.network == Compatibility::Compatible
         });
+        let mut peers = BTreeMap::new();
+        for peer_id in nodes
+            .iter()
+            .filter_map(|node| node.info.as_ref()?.peer_id.as_ref())
+        {
+            *peers.entry(peer_id.clone()).or_insert(0_usize) += 1;
+        }
+        let all_peers_known = peers.values().sum::<usize>() == nodes.len();
+        for node in &mut nodes {
+            node.peer_unique = node.info.as_ref().and_then(|info| {
+                let peer_id = info.peer_id.as_ref()?;
+                if peers.get(peer_id).is_some_and(|count| *count > 1) {
+                    Some(false)
+                } else {
+                    all_peers_known.then_some(true)
+                }
+            });
+            node.healthy = node.protocol == Compatibility::Compatible
+                && node.network == Compatibility::Compatible
+                && node.freshness == Freshness::Fresh
+                && node.peer_unique == Some(true);
+        }
         PreflightReport {
             expected_network: self.config.expected_network,
             test_fid: self.config.test_fid,
             compatible,
+            healthy: nodes.iter().all(|node| node.healthy),
+            max_block_delay_seconds: self.config.max_block_delay_secs,
+            distinct_peer_count: peers.len(),
             ready_for_reconstruction: false,
             nodes,
             limitations: vec![
                 "Node responses and message signatures are not independently verified.".into(),
+                "Freshness uses reported timestamps; peer IDs do not prove independent operators."
+                    .into(),
                 "Farcaster account authority is not verified; allocation is only node-reported."
                     .into(),
                 "Common chain history, ordering, finality, and complete replay remain unproved."
@@ -406,14 +542,19 @@ impl PreflightClient {
         let mut report = NodeReport {
             endpoint: endpoint.to_string(),
             info: None,
+            reachable: false,
             protocol: Compatibility::Unknown,
             network: Compatibility::Unknown,
+            freshness: Freshness::Unknown,
+            peer_unique: None,
+            healthy: false,
             observed_network: None,
             storage: None,
             authority: None,
             requests: Vec::new(),
         };
         let (value, mut evidence) = self.request(endpoint, "/v1/info", &[]).await;
+        report.reachable = evidence.status.is_some();
         if let Some(value) = value {
             match parse_info(&value) {
                 Some(info) => {
@@ -422,6 +563,8 @@ impl PreflightClient {
                     } else {
                         Compatibility::Incompatible
                     };
+                    report.freshness =
+                        Freshness::from_info(&info, self.config.max_block_delay_secs);
                     report.info = Some(info);
                 }
                 None => evidence.failure = Some(Failure::Malformed),
@@ -586,10 +729,52 @@ fn parse_info(value: &Value) -> Option<NodeInfo> {
         Some(count) => Some(count.as_u64()?),
         None => None,
     };
+    let peer_id = match value.get("peer_id") {
+        Some(value) => {
+            let peer = value.as_str()?;
+            if peer.is_empty()
+                || peer.len() > 128
+                || !peer
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || b"-_".contains(&byte))
+            {
+                return None;
+            }
+            Some(peer.to_owned())
+        }
+        None => None,
+    };
+    let mut shard_infos: Vec<ShardInfo> = Vec::new();
+    if let Some(value) = value.get("shardInfos") {
+        let shards = value.as_array()?;
+        if shards.len() > 256 {
+            return None;
+        }
+        for shard in shards {
+            let shard_id = u32::try_from(shard.get("shardId")?.as_u64()?).ok()?;
+            if u64::from(shard_id) > num_shards
+                || shard_infos.iter().any(|info| info.shard_id == shard_id)
+            {
+                return None;
+            }
+            shard_infos.push(ShardInfo {
+                shard_id,
+                max_height: shard.get("maxHeight")?.as_u64()?,
+                block_delay_seconds: shard.get("blockDelay")?.as_u64()?,
+                num_messages: match shard.get("numMessages") {
+                    Some(count) => Some(count.as_u64()?),
+                    None => None,
+                },
+            });
+        }
+        shard_infos.sort_unstable_by_key(|shard| shard.shard_id);
+    }
     Some(NodeInfo {
         version: version.to_owned(),
         num_shards,
         num_messages,
+        peer_id,
+        shard_infos,
     })
 }
 

@@ -6,8 +6,9 @@ use std::{
 };
 
 use psky_hypersnap::{
-    Compatibility, DEFAULT_MAX_RESPONSE_BYTES, Failure, MAX_ENDPOINTS, MAX_RESPONSE_BYTES, Network,
-    PreflightClient, PreflightConfig,
+    Compatibility, DEFAULT_MAX_BLOCK_DELAY_SECS, DEFAULT_MAX_RESPONSE_BYTES, Failure, Freshness,
+    MAX_BLOCK_DELAY_SECS, MAX_ENDPOINTS, MAX_RESPONSE_BYTES, Network, PreflightClient,
+    PreflightConfig,
 };
 use serde_json::{Value, json};
 use tokio::{
@@ -16,7 +17,8 @@ use tokio::{
     task::JoinHandle,
 };
 
-const INFO: &str = r#"{"version":"0.13.5","numShards":2,"dbStats":{"numMessages":123},"peer_id":"unretained-peer"}"#;
+// Older or incomplete responses must remain compatible without becoming healthy.
+const INFO: &str = r#"{"version":"0.13.5","numShards":2,"dbStats":{"numMessages":123}}"#;
 const SECRET: &str = "TOP_SECRET_AUTH_TOKEN";
 
 struct Reply {
@@ -163,6 +165,24 @@ fn compatible_replies(network: Value) -> Vec<Reply> {
     ]
 }
 
+fn info(peer_id: &str, block_delay: u64) -> Value {
+    json!({
+        "version":"0.13.5","numShards":2,"dbStats":{"numMessages":123},
+        "peer_id":peer_id,
+        "shardInfos":[
+            {"shardId":0,"maxHeight":100,"blockDelay":0,"numMessages":2},
+            {"shardId":1,"maxHeight":200,"blockDelay":block_delay,"numMessages":60},
+            {"shardId":2,"maxHeight":150,"blockDelay":1}
+        ]
+    })
+}
+
+fn replies_with_info(info: Value) -> Vec<Reply> {
+    let mut replies = compatible_replies(json!(1));
+    replies[0] = Reply::json(info.to_string());
+    replies
+}
+
 #[test]
 fn network_names_are_explicit_and_round_trip() {
     for network in [Network::Mainnet, Network::Testnet, Network::Devnet] {
@@ -293,6 +313,24 @@ fn limits_are_bounded() {
     );
 }
 
+#[test]
+fn freshness_threshold_is_bounded() {
+    for delay in [0, MAX_BLOCK_DELAY_SECS + 1, u64::MAX] {
+        assert!(
+            config("https://example.com", None)
+                .with_max_block_delay_secs(delay)
+                .is_err()
+        );
+    }
+    for delay in [1, DEFAULT_MAX_BLOCK_DELAY_SECS, MAX_BLOCK_DELAY_SECS] {
+        assert!(
+            config("https://example.com", None)
+                .with_max_block_delay_secs(delay)
+                .is_ok()
+        );
+    }
+}
+
 #[tokio::test]
 async fn info_without_test_fid_does_not_invent_network_evidence() {
     let server = MockServer::start(vec![Reply::json(INFO)]).await;
@@ -301,9 +339,13 @@ async fn info_without_test_fid_does_not_invent_network_evidence() {
         .run()
         .await;
     assert!(!report.compatible);
+    assert!(!report.healthy);
+    assert_eq!(report.max_block_delay_seconds, DEFAULT_MAX_BLOCK_DELAY_SECS);
     assert!(!report.ready_for_reconstruction);
     assert_eq!(report.nodes[0].protocol, Compatibility::Compatible);
     assert_eq!(report.nodes[0].network, Compatibility::Unknown);
+    assert!(report.nodes[0].reachable);
+    assert_eq!(report.nodes[0].freshness, Freshness::Unknown);
     assert_eq!(
         report.nodes[0].info.as_ref().unwrap().num_messages,
         Some(123)
@@ -324,10 +366,15 @@ async fn compatible_nodes_report_only_the_evidence_they_provided() {
     .unwrap();
     let report = PreflightClient::new(configured).unwrap().run().await;
     assert!(report.compatible);
+    assert!(!report.healthy);
+    assert_eq!(report.distinct_peer_count, 0);
     assert!(!report.ready_for_reconstruction);
     assert_eq!(report.nodes.len(), 2);
     assert!(!report.limitations.is_empty());
     for node in &report.nodes {
+        assert!(!node.healthy);
+        assert_eq!(node.freshness, Freshness::Unknown);
+        assert_eq!(node.peer_unique, None);
         assert_eq!(node.observed_network, Some(Network::Mainnet));
         assert!(
             node.requests
@@ -346,7 +393,6 @@ async fn compatible_nodes_report_only_the_evidence_they_provided() {
     }
     let encoded = serde_json::to_string(&report).unwrap();
     assert!(!encoded.contains(SECRET));
-    assert!(!encoded.contains("unretained-peer"));
     assert_eq!(report, serde_json::from_str(&encoded).unwrap());
     for server in [&first, &second] {
         let requests = server.requests();
@@ -362,6 +408,224 @@ async fn compatible_nodes_report_only_the_evidence_they_provided() {
             assert!(request.starts_with("GET "));
         }
     }
+}
+
+#[tokio::test]
+async fn fresh_distinct_nodes_pass_health_without_claiming_reconstruction() {
+    let first = MockServer::start(replies_with_info(info("12D3KooWNodeA", 30))).await;
+    let mut second_info = info("12D3KooWNodeB", 0);
+    // Heights differ between nodes because requests are sequential. Freshness
+    // compares reported timestamps, not equal heights or hashes.
+    second_info["shardInfos"][1]["maxHeight"] = json!(201);
+    second_info["shardInfos"].as_array_mut().unwrap().reverse();
+    let second = MockServer::start(replies_with_info(second_info)).await;
+    let configured = PreflightConfig::new(
+        vec![first.url.clone(), second.url.clone()],
+        Network::Mainnet,
+        Some(8531),
+    )
+    .unwrap();
+    let report = PreflightClient::new(configured).unwrap().run().await;
+    assert!(report.compatible);
+    assert!(report.healthy);
+    assert_eq!(report.distinct_peer_count, 2);
+    assert!(!report.ready_for_reconstruction);
+    for node in &report.nodes {
+        assert!(node.healthy);
+        assert_eq!(node.freshness, Freshness::Fresh);
+        assert_eq!(node.peer_unique, Some(true));
+        let shards = &node.info.as_ref().unwrap().shard_infos;
+        assert_eq!(
+            shards
+                .iter()
+                .map(|shard| shard.shard_id)
+                .collect::<Vec<_>>(),
+            vec![0, 1, 2]
+        );
+        assert_eq!(shards[0].num_messages, Some(2));
+        assert_eq!(shards[2].num_messages, None);
+    }
+    assert_eq!(
+        report.nodes[0].info.as_ref().unwrap().shard_infos[1].block_delay_seconds,
+        30
+    );
+    let encoded = serde_json::to_string(&report).unwrap();
+    assert_eq!(report, serde_json::from_str(&encoded).unwrap());
+}
+
+#[tokio::test]
+async fn high_block_delay_is_lagging_even_for_a_compatible_endpoint() {
+    for block_delay in [31, 19 * 24 * 60 * 60, u64::MAX] {
+        let server = MockServer::start(replies_with_info(info("12D3KooWNodeA", block_delay))).await;
+        let report = PreflightClient::new(config(&server.url, Some(8531)))
+            .unwrap()
+            .run()
+            .await;
+        assert!(report.compatible);
+        assert!(!report.healthy);
+        assert_eq!(report.nodes[0].freshness, Freshness::Lagging);
+        assert!(!report.ready_for_reconstruction);
+    }
+}
+
+#[tokio::test]
+async fn custom_block_delay_threshold_is_used_and_reported() {
+    let server = MockServer::start(replies_with_info(info("12D3KooWNodeA", 31))).await;
+    let configured = config(&server.url, Some(8531))
+        .with_max_block_delay_secs(31)
+        .unwrap();
+    let report = PreflightClient::new(configured).unwrap().run().await;
+    assert!(report.healthy);
+    assert_eq!(report.max_block_delay_seconds, 31);
+    assert_eq!(report.nodes[0].freshness, Freshness::Fresh);
+}
+
+#[tokio::test]
+async fn duplicate_peers_never_count_as_two_healthy_nodes() {
+    let first = MockServer::start(replies_with_info(info("12D3KooWNodeA", 1))).await;
+    let second = MockServer::start(replies_with_info(info("12D3KooWNodeA", 1))).await;
+    let configured = PreflightConfig::new(
+        vec![first.url.clone(), second.url.clone()],
+        Network::Mainnet,
+        Some(8531),
+    )
+    .unwrap();
+    let report = PreflightClient::new(configured).unwrap().run().await;
+    assert!(report.compatible);
+    assert!(!report.healthy);
+    assert_eq!(report.distinct_peer_count, 1);
+    assert!(
+        report
+            .nodes
+            .iter()
+            .all(|node| node.peer_unique == Some(false))
+    );
+    assert!(report.nodes.iter().all(|node| !node.healthy));
+}
+
+#[tokio::test]
+async fn missing_peer_identity_keeps_uniqueness_unknown_for_every_node() {
+    let first = MockServer::start(replies_with_info(info("12D3KooWNodeA", 1))).await;
+    let mut unknown = info("12D3KooWNodeB", 1);
+    unknown.as_object_mut().unwrap().remove("peer_id");
+    let second = MockServer::start(replies_with_info(unknown)).await;
+    let configured = PreflightConfig::new(
+        vec![first.url.clone(), second.url.clone()],
+        Network::Mainnet,
+        Some(8531),
+    )
+    .unwrap();
+    let report = PreflightClient::new(configured).unwrap().run().await;
+    assert!(report.compatible);
+    assert!(!report.healthy);
+    assert_eq!(report.distinct_peer_count, 1);
+    assert!(report.nodes.iter().all(|node| node.peer_unique.is_none()));
+}
+
+#[tokio::test]
+async fn missing_partial_or_empty_shard_data_never_looks_fresh() {
+    let complete = info("12D3KooWNodeA", 1);
+    let mut absent = complete.clone();
+    absent.as_object_mut().unwrap().remove("shardInfos");
+    let mut empty = complete.clone();
+    empty["shardInfos"] = json!([]);
+    let mut partial = complete.clone();
+    partial["shardInfos"].as_array_mut().unwrap().pop();
+    let mut zero_height = complete;
+    zero_height["shardInfos"][0]["maxHeight"] = json!(0);
+    for body in [absent, empty, partial, zero_height] {
+        let server = MockServer::start(replies_with_info(body)).await;
+        let report = PreflightClient::new(config(&server.url, Some(8531)))
+            .unwrap()
+            .run()
+            .await;
+        assert!(report.compatible);
+        assert!(!report.healthy);
+        assert_eq!(report.nodes[0].freshness, Freshness::Unknown);
+    }
+}
+
+#[tokio::test]
+async fn malformed_shard_fields_and_peer_ids_are_rejected() {
+    let complete = info("12D3KooWNodeA", 1);
+    let mut bad_values = Vec::new();
+    for peer in [
+        json!(""),
+        json!(null),
+        json!(123),
+        json!("x".repeat(129)),
+        json!("<script>alert(1)</script>"),
+        json!("peer\nname"),
+        json!("péer"),
+    ] {
+        let mut value = complete.clone();
+        value["peer_id"] = peer;
+        bad_values.push(value);
+    }
+    for (field, wrong) in [
+        ("shardId", json!(u64::MAX)),
+        ("shardId", json!(3)),
+        ("maxHeight", json!(-1)),
+        ("maxHeight", json!("123")),
+        ("blockDelay", json!(-1)),
+        ("blockDelay", json!(0.5)),
+        ("blockDelay", json!(null)),
+        ("numMessages", json!("123")),
+    ] {
+        let mut value = complete.clone();
+        value["shardInfos"][0][field] = wrong;
+        bad_values.push(value);
+    }
+    let mut duplicate = complete.clone();
+    duplicate["shardInfos"][1]["shardId"] = json!(0);
+    bad_values.push(duplicate);
+    let mut missing_delay = complete.clone();
+    missing_delay["shardInfos"][0]
+        .as_object_mut()
+        .unwrap()
+        .remove("blockDelay");
+    bad_values.push(missing_delay);
+    for wrong_shards in [
+        json!(null),
+        json!({}),
+        json!([{}]),
+        json!(vec![json!({}); 257]),
+    ] {
+        let mut value = complete.clone();
+        value["shardInfos"] = wrong_shards;
+        bad_values.push(value);
+    }
+    for value in bad_values {
+        let server = MockServer::start(vec![Reply::json(value.to_string())]).await;
+        let report = PreflightClient::new(config(&server.url, Some(8531)))
+            .unwrap()
+            .run()
+            .await;
+        assert!(report.nodes[0].reachable);
+        assert!(report.nodes[0].info.is_none(), "{value}");
+        assert_eq!(
+            report.nodes[0].requests[0].failure,
+            Some(Failure::Malformed),
+            "{value}"
+        );
+        assert!(!report.healthy);
+        assert_eq!(server.requests().len(), 1);
+    }
+}
+
+#[tokio::test]
+async fn fresh_unique_wrong_network_is_not_healthy() {
+    let mut replies = replies_with_info(info("12D3KooWNodeA", 1));
+    replies[1] = Reply::json(cast(json!(2), 8531));
+    let server = MockServer::start(replies).await;
+    let report = PreflightClient::new(config(&server.url, Some(8531)))
+        .unwrap()
+        .run()
+        .await;
+    assert_eq!(report.nodes[0].freshness, Freshness::Fresh);
+    assert_eq!(report.nodes[0].peer_unique, Some(true));
+    assert_eq!(report.nodes[0].network, Compatibility::Incompatible);
+    assert!(!report.healthy);
 }
 
 #[tokio::test]

@@ -67,14 +67,18 @@ cargo run -p psky -- serve \
   --serve-fixture
 ```
 
-Open <http://127.0.0.1:8788>. Copy the token from `tmp/node-a/admin.token` into
-the console. The token remains in tab memory. Do not put it in a URL or commit
-it to the repository. The console can run preflight and create a new offline
-reconstruction report. Its status identifies unsupported production features.
+Open <http://127.0.0.1:8788>. Obtain the token with
+`cargo run --quiet -p psky -- admin-token --data-dir tmp/node-a`, then paste it
+into Connect. It stays in tab memory. Never put it in a URL, chat, or repository.
+Configure endpoints and all implemented node settings in the console. Saved
+settings win over startup flags on later starts. Only listener changes need a
+restart. Preflight and offline reconstruction run as tracked background actions.
+See the [management runbook](management.md) and [agent API guide](../llms.txt).
 
 The public development listener is <http://127.0.0.1:8787>. `/health` reports
 process availability; `/ready` returns 503 because this is not a ready PDS.
-With `--serve-fixture`, this endpoint exports the documented fixture:
+With fixture export enabled in Configuration (or `--serve-fixture` on first
+start), this endpoint exports the documented fixture:
 
 ```text
 /xrpc/com.atproto.sync.getRepo?did=did:plc:aaaaaaaaaaaaaaaaaaaaaaaa
@@ -85,5 +89,6 @@ ports and `--data-dir tmp/node-b`. Do not configure a real account's DID to
 point at this development server.
 
 Stop with Ctrl-C or SIGTERM. In-flight operator actions finish before shutdown.
-All local files are development outputs or the admin token; no network content
-is deleted by stopping or rerunning the application.
+Local settings and the admin token persist. Reports and logs reset on restart;
+lab artifact directories persist. No network content is deleted by stopping or
+rerunning the application.

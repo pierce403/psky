@@ -18,6 +18,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Test console state and asynchronous request races
+        run: node --test scripts/console.test.mjs
       - name: Verify Rust CAR exports with the official ATProto implementation
         run: |
           npm ci --ignore-scripts --prefix crates/psky-repo/interop

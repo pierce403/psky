@@ -2,9 +2,12 @@
 
 use std::{net::SocketAddr, path::PathBuf};
 
-use anyhow::{Result, ensure};
+use anyhow::Result;
 use clap::{Args, Parser, Subcommand};
-use psky::{lab, server};
+use psky::{
+    lab, server,
+    settings::{ConfigStore, Settings},
+};
 use psky_hypersnap::{Network, PreflightClient, PreflightConfig};
 
 #[derive(Parser)]
@@ -27,18 +30,24 @@ enum Command {
         #[arg(long)]
         output: PathBuf,
     },
-    /// Run the localhost console and a public API with production writes disabled.
-    Serve {
-        /// Loopback address for the management console.
-        #[arg(long, default_value = "127.0.0.1:8788")]
-        admin_bind: SocketAddr,
-        /// Separate public API address. Loopback is the development default.
-        #[arg(long, default_value = "127.0.0.1:8787")]
-        public_bind: SocketAddr,
-        /// Local operator token and disposable experiment outputs.
+    /// Print an existing local console token for the operator. Keep it private.
+    AdminToken {
+        /// Existing node data directory. This command never initializes a node.
         #[arg(long, default_value = "tmp/psky")]
         data_dir: PathBuf,
-        /// Explicitly serve the offline fixture CAR at getRepo.
+    },
+    /// Run the localhost console and a public API with production writes disabled.
+    Serve {
+        /// Initial loopback address. Saved console settings win on later starts.
+        #[arg(long, default_value = "127.0.0.1:8788")]
+        admin_bind: SocketAddr,
+        /// Initial public API address. Saved console settings win on later starts.
+        #[arg(long, default_value = "127.0.0.1:8787")]
+        public_bind: SocketAddr,
+        /// Local settings, operator token, and disposable experiment outputs.
+        #[arg(long, default_value = "tmp/psky")]
+        data_dir: PathBuf,
+        /// Initially enable fixture CAR export. Editable in the console later.
         #[arg(long)]
         serve_fixture: bool,
         #[command(flatten)]
@@ -79,6 +88,7 @@ async fn main() -> Result<()> {
         Command::Lab { output } => {
             println!("{}", serde_json::to_string_pretty(&lab::run(&output)?)?);
         }
+        Command::AdminToken { data_dir } => println!("{}", server::read_admin_token(&data_dir)?),
         Command::Serve {
             admin_bind,
             public_bind,
@@ -86,26 +96,28 @@ async fn main() -> Result<()> {
             serve_fixture,
             peers,
         } => {
-            ensure!(
-                admin_bind.ip().is_loopback(),
-                "admin listener must bind loopback"
-            );
-            let preflight = if peers.endpoint.is_empty() {
-                None
-            } else {
-                Some(peers.config()?)
+            let initial = Settings {
+                admin_bind,
+                public_bind,
+                serve_fixture,
+                endpoints: peers.endpoint,
+                network: peers.network,
+                test_fid: peers.fid,
+                ..Settings::default()
             };
-            // Bind both before creating local state, so a port conflict fails early.
-            let admin = tokio::net::TcpListener::bind(admin_bind).await?;
-            let public = tokio::net::TcpListener::bind(public_bind).await?;
+            let store = ConfigStore::open(&data_dir, initial)?;
+            let saved = store.snapshot().settings;
+            let admin = tokio::net::TcpListener::bind(saved.admin_bind).await?;
+            let public = tokio::net::TcpListener::bind(saved.public_bind).await?;
             let token = server::load_admin_token(&data_dir)?;
             let admin_addr = admin.local_addr()?;
             let public_addr = public.local_addr()?;
             let state = server::ConsoleState::new(server::ConsoleConfig {
                 admin_addr,
+                public_addr,
                 data_dir: data_dir.clone(),
                 token,
-                preflight,
+                store,
             })?;
             eprintln!("Console: http://{admin_addr}");
             eprintln!(
@@ -113,20 +125,21 @@ async fn main() -> Result<()> {
                 data_dir.join("admin.token").display()
             );
             eprintln!("Public API: http://{public_addr} (production PDS unavailable)");
-            if serve_fixture {
+            if saved.serve_fixture {
                 eprintln!("Offline fixture CAR enabled; no network-backed repositories");
             }
             tokio::try_join!(
-                axum::serve(admin, server::admin_router(state)).with_graceful_shutdown(shutdown()),
-                axum::serve(public, server::public_router(serve_fixture))
-                    .with_graceful_shutdown(shutdown()),
+                axum::serve(admin, server::admin_router(state.clone()))
+                    .with_graceful_shutdown(shutdown(state.clone())),
+                axum::serve(public, server::public_router(state.clone()))
+                    .with_graceful_shutdown(shutdown(state)),
             )?;
         }
     }
     Ok(())
 }
 
-async fn shutdown() {
+async fn shutdown(state: std::sync::Arc<server::ConsoleState>) {
     #[cfg(unix)]
     {
         use tokio::signal::unix::{SignalKind, signal};
@@ -135,4 +148,5 @@ async fn shutdown() {
     }
     #[cfg(not(unix))]
     let _ = tokio::signal::ctrl_c().await;
+    state.drain().await;
 }

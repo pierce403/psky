@@ -10,5 +10,7 @@
 
 #![deny(missing_docs)]
 
+pub mod journal;
 pub mod lab;
 pub mod server;
+pub mod settings;

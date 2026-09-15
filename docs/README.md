@@ -4,6 +4,8 @@ Start with [getting started](getting-started.md), then read the
 [implementation boundaries](architecture.md) and
 [storage feasibility report](storage-feasibility.md).
 The [feature tracker](../FEATURES.md) describes the complete roadmap.
+The [management runbook](management.md) covers the localhost control panel;
+[llms.txt](../llms.txt) documents the same API for operator-authorized agents.
 
 ## Documentation from code
 

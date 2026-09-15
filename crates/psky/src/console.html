@@ -1,27 +1,79 @@
 <!doctype html>
 <html lang="en">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>PurpleSky local console</title>
-<style>
-  :root { color-scheme:dark; font:16px/1.6 system-ui,sans-serif; background:#171024; color:#f2eafa }
-  body { max-width:58rem; margin:3rem auto; padding:0 1.5rem }
-  h1 { margin-bottom:0 } p { color:#c9bfd7 } input,button { font:inherit; padding:.5rem .75rem; border:1px solid #9879b8; border-radius:4px }
-  input { max-width:100%; box-sizing:border-box; width:36rem } button { cursor:pointer; margin:.4rem .4rem .4rem 0 }
-  pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#100c18; padding:1rem; border-radius:4px }
-  :focus-visible { outline:2px solid #d6b2ff; outline-offset:3px } .status { color:#eac576 }
-</style>
-<h1>PurpleSky</h1>
-<p>Local management console</p>
-<p class="status">Development mode. Live PDS writes are unavailable. Reconstruction uses public test fixtures.</p>
-<label for="token">Admin token from your node's admin.token file</label><br>
-<input id="token" type="password" autocomplete="off" spellcheck="false">
-<div>
-  <button id="status">Refresh status</button>
-  <button id="preflight">Check Hypersnap nodes</button>
-  <button id="reconstruct">Run offline reconstruction</button>
-</div>
-<p id="notice" role="status" aria-live="polite">Enter the local token to begin. It stays in this tab's memory.</p>
-<pre id="result" aria-label="Operation result">No results yet.</pre>
-<script src="/admin.js"></script>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>PurpleSky | Node console</title>
+  <link rel="stylesheet" href="/admin.css">
+  <script src="/admin.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#overview">Skip to node status</a>
+  <div class="layout">
+    <aside class="sidebar">
+      <a class="brand" href="#overview" aria-label="PurpleSky overview"><span class="brand-mark" aria-hidden="true">p</span><span>PurpleSky<small>Node console</small></span></a>
+      <nav aria-label="Console sections">
+        <a href="#overview"><span aria-hidden="true">◉</span> Overview</a>
+        <a href="#configuration"><span aria-hidden="true">⚙</span> Configuration</a>
+        <a href="#activity"><span aria-hidden="true">≡</span> Activity</a>
+      </nav>
+      <div class="sidebar-footer"><span class="local-tag">LOCAL MANAGEMENT</span><a href="/llms.txt">Agent interface ↗</a></div>
+    </aside>
+    <main>
+      <header class="page-header">
+        <div><p class="eyebrow">PURPLESKY NODE</p><h1 id="node-title">Node overview</h1><p class="subtle" id="node-version">Preflight and reconstruction lab</p></div>
+        <div class="connection-actions"><span id="connection-state" class="badge neutral">Disconnected</span><button id="refresh" type="button" class="secondary" disabled>Refresh</button><button id="disconnect" type="button" class="quiet" hidden>Disconnect</button></div>
+      </header>
+      <section id="connection-panel" class="panel connection-panel" aria-labelledby="connection-heading">
+        <div><h2 id="connection-heading">Connect to your node</h2><p>Run <code>psky admin-token --data-dir &lt;your node directory&gt;</code> locally. Paste the token here. It stays in this tab's memory.</p></div>
+        <form id="connection-form"><label class="sr-only" for="token">Admin token</label><input id="token" type="password" autocomplete="off" spellcheck="false" placeholder="Admin token" required><button id="connect" type="submit">Connect</button></form>
+      </section>
+      <p id="notice" class="notice" role="status" aria-live="polite">Enter your admin token to load node status.</p>
+      <section id="overview" aria-labelledby="overview-heading">
+        <h2 id="overview-heading" class="sr-only">Overview</h2>
+        <div class="readiness-banner"><span class="status-dot" aria-hidden="true"></span><div><strong>PDS not ready</strong><p id="storage-gate">Live account writes are unavailable. The reconstruction lab uses public test fixtures.</p></div><span class="badge warning">Development</span></div>
+        <div class="metrics">
+          <article class="panel metric"><p class="metric-label">Node uptime</p><strong id="uptime">Not connected</strong><span class="subtle">Current process</span></article>
+          <article class="panel metric"><p class="metric-label">Hypersnap endpoints</p><strong id="peer-count">Not loaded</strong><span class="subtle" id="peer-summary">Run a read-only check</span></article>
+          <article class="panel metric"><p class="metric-label">Last peer check</p><strong id="last-check">Never</strong><span class="subtle" id="check-summary">No live observations yet</span></article>
+          <article class="panel metric"><p class="metric-label">Current operation</p><strong id="operation-state">Idle</strong><span class="subtle" id="operation-detail">No operation running</span></article>
+        </div>
+        <section class="panel" aria-labelledby="peers-heading">
+          <div class="section-header"><div><h2 id="peers-heading">Hypersnap peers</h2><p>Reported health is a snapshot. It does not prove retained history or replication.</p></div><button id="preflight" type="button" disabled>Check nodes</button></div>
+          <p id="preflight-stale" class="inline-warning" hidden>Configuration changed since this check. Run it again for current endpoints.</p>
+          <div id="peers" class="peer-list"><p class="empty-state">Connect to load the configured endpoints.</p></div>
+          <details><summary>Preflight evidence</summary><pre id="preflight-evidence">No peer check yet.</pre></details>
+        </section>
+        <div class="overview-bottom">
+          <section class="panel" aria-labelledby="lab-heading"><div class="section-header"><div><h2 id="lab-heading">Reconstruction lab</h2><p>Two workers, public fixtures, matching exports.</p></div><span class="badge neutral">Offline</span></div><p id="lab-summary">No lab result in this process.</p><button id="reconstruct" type="button" class="secondary" disabled>Run offline reconstruction</button><details><summary>Lab evidence</summary><pre id="lab-evidence">No reconstruction yet.</pre></details></section>
+          <section class="panel" aria-labelledby="runtime-heading"><div class="section-header"><div><h2 id="runtime-heading">Runtime</h2><p>Active listener addresses and account readiness.</p></div></div><dl class="facts"><div><dt>Management</dt><dd id="active-admin">Not loaded</dd></div><div><dt>Public API</dt><dd id="active-public">Not loaded</dd></div><div><dt>Account binding</dt><dd id="account-binding">Not implemented</dd></div><div><dt>Signer</dt><dd id="signer">Public fixture key only</dd></div></dl></section>
+        </div>
+      </section>
+      <section id="configuration" class="panel" aria-labelledby="config-heading">
+        <div class="section-header"><div><p class="eyebrow">NODE SETTINGS</p><h2 id="config-heading">Configuration</h2><p>Settings persist on this node. Listener changes take effect after a process restart.</p></div><span id="config-revision" class="badge neutral">Not loaded</span></div>
+        <p id="config-stale" class="inline-warning" hidden>A newer configuration is available. Reload before saving. Your edits are still shown.</p>
+        <p id="restart-warning" class="inline-warning" hidden>Listener changes are saved. Restart the node process to apply them.</p>
+        <form id="config-form">
+          <fieldset id="config-fields" disabled><legend class="sr-only">Node configuration</legend>
+            <div class="form-grid"><label>Node name<input id="setting-node-name" name="node_name" type="text" maxlength="64" required></label><label>Farcaster network<select id="setting-network" name="network"><option value="mainnet">Mainnet</option><option value="testnet">Testnet</option><option value="devnet">Devnet</option></select></label></div>
+            <label>Hypersnap endpoints<textarea id="setting-endpoints" name="endpoints" rows="3" spellcheck="false" placeholder="https://haatz.quilibrium.com&#10;http://127.0.0.1:3381" aria-describedby="endpoints-help"></textarea></label><p class="field-help" id="endpoints-help">One URL per line, up to 8. HTTPS for remote nodes; HTTP for loopback or SSH tunnels. No credentials, paths, or query strings.</p>
+            <div class="form-grid"><label>Test FID<input id="setting-fid" name="test_fid" type="number" min="1" max="9007199254740991" step="1" placeholder="Optional"><span class="field-help">Used for public read checks only.</span></label><label>Maximum block delay (seconds)<input id="setting-max-delay" name="max_block_delay_seconds" type="number" min="1" max="86400" step="1" required><span class="field-help">Threshold for the reported delay indicator.</span></label><label>Request timeout (milliseconds)<input id="setting-timeout" name="request_timeout_ms" type="number" min="10" max="30000" step="1" required></label><label>Maximum response size (bytes)<input id="setting-max-bytes" name="max_response_bytes" type="number" min="1" max="1048576" step="1" required></label></div>
+            <div class="form-divider"></div>
+            <div class="form-grid"><label>Management bind address<input id="setting-admin-bind" name="admin_bind" type="text" spellcheck="false" required><span class="field-help">Loopback only. Requires a process restart.</span></label><label>Public API bind address<input id="setting-public-bind" name="public_bind" type="text" spellcheck="false" required><span class="field-help">Requires a process restart.</span></label></div>
+            <label class="checkbox-label"><input id="setting-fixture" name="serve_fixture" type="checkbox"><span>Serve the offline fixture CAR from the public API<small>Exposes only the documented public test repository.</small></span></label>
+          </fieldset>
+          <div class="form-actions"><span id="config-notice" class="subtle" role="status">Connect to load settings.</span><div><button id="reload-config" class="secondary" type="button" disabled>Reload saved</button><button id="save-config" type="submit" disabled>Save settings</button></div></div>
+        </form>
+      </section>
+      <section id="activity" class="panel" aria-labelledby="activity-heading"><div class="section-header"><div><p class="eyebrow">DIAGNOSTICS</p><h2 id="activity-heading">Activity</h2><p>Recent operations and bounded node events. Times use your browser's timezone.</p></div><span class="badge neutral" id="log-count">0 events</span></div>
+        <h3>Operations</h3><div class="table-wrap"><table><thead><tr><th scope="col">Operation</th><th scope="col">State</th><th scope="col">Started</th><th scope="col">Result</th></tr></thead><tbody id="operations"><tr><td colspan="4" class="empty-state">No operations loaded.</td></tr></tbody></table></div>
+        <div class="logs-heading"><h3>Node events</h3><label class="compact-label">Level<select id="log-filter"><option value="all">All events</option><option value="warn">Warnings and errors</option><option value="error">Errors only</option></select></label></div>
+        <p id="logs-truncated" class="field-help" hidden>Older events have left the bounded log buffer.</p><div class="table-wrap logs-table"><table><thead><tr><th scope="col">Time</th><th scope="col">Level</th><th scope="col">Event</th><th scope="col">Message</th></tr></thead><tbody id="logs"><tr><td colspan="4" class="empty-state">No events loaded.</td></tr></tbody></table></div>
+      </section>
+      <footer class="page-footer"><span>PurpleSky · ATProto + Farcaster</span><a href="/llms.txt">Management API for agents ↗</a></footer>
+    </main>
+  </div>
+  <noscript><p class="no-script">This console needs JavaScript. Read <a href="/llms.txt">/llms.txt</a> to use the management HTTP API.</p></noscript>
+</body>
 </html>
