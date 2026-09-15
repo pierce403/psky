@@ -1,0 +1,13 @@
+{
+  "name": "psky-repo-interop",
+  "private": true,
+  "type": "module",
+  "description": "Independent verifier for PurpleSky offline CAR fixtures",
+  "scripts": {
+    "verify": "node verify.mjs"
+  },
+  "dependencies": {
+    "@atproto/crypto": "0.5.5",
+    "@atproto/repo": "0.10.14"
+  }
+}

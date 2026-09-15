@@ -1,0 +1,36 @@
+name: Rust
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned toolchain
+        run: rustup toolchain install 1.91.1 --profile minimal --component clippy --component rustfmt
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - run: cargo test --workspace --locked
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify Rust CAR exports with the official ATProto implementation
+        run: |
+          npm ci --ignore-scripts --prefix crates/psky-repo/interop
+          mkdir -p tmp
+          cargo run --locked -p psky -- lab --output tmp/ci-proof
+          node scripts/verify-lab.mjs tmp/ci-proof
+          cargo run --locked -p psky-repo --example export_fixture -- tmp/reference-fixture.car
+          node crates/psky-repo/interop/verify.mjs tmp/reference-fixture.car did:plc:abcdefghijklmnopqrstuvwx 031b84c5567b126440995d3ed5aaba0565d71e1834604819ff9c17f5e9d5dd078f 41
+      - name: Generate API documentation from Rust comments
+        env:
+          RUSTDOCFLAGS: -D warnings
+        run: cargo doc --workspace --no-deps --locked
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rustdoc
+          path: target/doc

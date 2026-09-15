@@ -5,7 +5,7 @@ Hypersnap, with replaceable workers and a localhost management console.
 
 This file follows [FEATURES.md](https://features.md/). Each feature declares
 `planned`, `in-progress`, or `stable`, testable properties, and acceptance checks.
-Implementation features below are planned. The existing proposal website does
+The first Rust tools are in progress. The existing proposal website does
 not demonstrate PDS functionality. Checked criteria must link to reproducible
 evidence; a passing mock does not establish public-network interoperability.
 
@@ -59,7 +59,8 @@ visibility, capacity, and operator-approved test scope are established.
 ## Features
 
 ### F-001: Unmodified Hypersnap storage contract
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Source assessment and live read-only checks](docs/storage-feasibility.md). Native cast storage exists; arbitrary record mapping, recovery after pruning, and media-byte storage remain unresolved. No write proof.
 - **Description**: Establish whether existing Hypersnap nodes can support the proposed PDS persistence model.
 - **Properties**:
   - Pin node versions, network identity, endpoints, accepted message types, and API behavior.
@@ -70,12 +71,13 @@ visibility, capacity, and operator-approved test scope are established.
 - **Test Criteria**:
   - [ ] A bounded test payload is accepted through an existing supported message path and retrieved through another node.
   - [ ] Exact content bytes and identifiers round-trip without relying on the submitting worker's disk.
-  - [ ] Document how current state is reconstructed after pruning or compaction, or record the blocking gap.
+  - [x] Document how current state is reconstructed after pruning or compaction, or record the blocking gap. [Gap analysis](docs/storage-feasibility.md)
   - [ ] Determine whether ordering is per account, shard, or network and define a usable publication order.
   - [ ] Publish the supported data mapping and unsupported cases with node versions and read/write evidence.
 
 ### F-002: Network and test-account configuration
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Read-only preflight](docs/evidence/2026-09-15-hypersnap-preflight.md). deanpierce.eth resolves to FID 8531; this is the user's account, not a provisioned disposable test identity. No signing authority is established.
 - **Description**: Make the first experiment reproducible and bounded.
 - **Properties**:
   - Configure a named network and explicit endpoint set; never mix incompatible histories.
@@ -88,7 +90,8 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] A documented command runs the bounded experiment with explicit test configuration.
 
 ### F-003: Rust service foundation
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Build and test procedure](docs/getting-started.md), [implementation validation](docs/evidence/2026-09-15-rust-foundation.md). Three crates; production auth and protected signing remain absent.
 - **Description**: Provide a runnable worker with clear protocol boundaries.
 - **Properties**:
   - Separate modules for Hypersnap access, projection, ATProto repositories, identity/auth, signing, public APIs, and admin APIs.
@@ -117,7 +120,8 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] Unavailable or stale authority data cannot grant new privileges.
 
 ### F-005: Canonical mutation and projection model
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Repository tests and independent verifier](crates/psky-repo/interop/README.md). Canonical repository encoding and fixture reconstruction work; no live mutation mapping or ordering policy exists yet.
 - **Description**: Map accepted shared state into one repository history per DID.
 - **Properties**:
   - Depends on F-001's proven representation, not a fictional Hypersnap mutation API.
@@ -147,7 +151,8 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] Worker disk loss does not require the original worker or expose a repo private key.
 
 ### F-007: Two-worker reconstruction proof
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Offline foundation results](docs/evidence/2026-09-15-rust-foundation.md). All live-network acceptance checks remain unchecked; fixture replay is not the PoC.
 - **Description**: Demonstrate the core claim before implementing a complete PDS.
 - **Properties**:
   - One test FID/DID, two isolated Rust workers, existing Hypersnap endpoints, and one protected signer.
@@ -162,7 +167,8 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] Save exact commands, versions, network references, redacted logs, CARs, hashes, and verifier output as linked evidence.
 
 ### F-008: Localhost management console
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Console runbook](docs/getting-started.md), [validation](docs/evidence/2026-09-15-rust-foundation.md). Preflight and offline reconstruction run; no production cache rebuild or signer management is implemented.
 - **Description**: Inspect and operate a node from a local browser during the PoC.
 - **Properties**:
   - Bind admin routes to loopback by default and keep them off the public API listener.
@@ -172,8 +178,8 @@ visibility, capacity, and operator-approved test scope are established.
   - Never show private keys or authentication tokens in diagnostics or exports.
 - **Test Criteria**:
   - [ ] The console reports the actual A/B reconstruction progress and matching published head.
-  - [ ] Unauthenticated, foreign-origin, and invalid-Host management requests fail.
-  - [ ] Admin routes are unreachable through the public listener.
+  - [x] Unauthenticated, foreign-origin, and invalid-Host management requests fail. [Router tests](crates/psky/src/server.rs)
+  - [x] Admin routes are unreachable through the public listener. [Router tests](crates/psky/src/server.rs)
   - [ ] Cache rebuild requires an explicit action and does not delete network data or signing material.
 
 ### F-009: Concurrency and failure correctness
@@ -274,7 +280,8 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] Export and documented recovery remain usable when the old worker is offline.
 
 ### F-016: Operator release and observability
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Development runbook and rustdoc](docs/README.md), [CI](.github/workflows/rust.yml). Production deployment, upgrade, and recovery procedures remain planned.
 - **Description**: Package a repeatable, diagnosable single-operator deployment.
 - **Properties**:
   - Document installation, public routing/TLS, private admin access, signer provisioning, and endpoint configuration.
@@ -300,6 +307,12 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] Any change to the agreed storage or network constraints receives an explicit new decision.
 
 ## Immediate next run
+
+The initial implementation and its limits are recorded in
+[the foundation evidence](docs/evidence/2026-09-15-rust-foundation.md). Rustdoc
+generates API documentation from code comments; CI runs tests, linting,
+documentation checks, and independent ATProto CAR verification. Use the
+[developer runbook](docs/getting-started.md) to reproduce it.
 
 1. Complete F-001/F-002 preflight and record the concrete storage mapping and gaps.
 2. If text-content persistence is viable, implement F-003 through F-008 as one bounded vertical slice.

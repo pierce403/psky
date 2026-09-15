@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PurpleSky local console</title>
+<style>
+  :root { color-scheme:dark; font:16px/1.6 system-ui,sans-serif; background:#171024; color:#f2eafa }
+  body { max-width:58rem; margin:3rem auto; padding:0 1.5rem }
+  h1 { margin-bottom:0 } p { color:#c9bfd7 } input,button { font:inherit; padding:.5rem .75rem; border:1px solid #9879b8; border-radius:4px }
+  input { max-width:100%; box-sizing:border-box; width:36rem } button { cursor:pointer; margin:.4rem .4rem .4rem 0 }
+  pre { white-space:pre-wrap; overflow-wrap:anywhere; background:#100c18; padding:1rem; border-radius:4px }
+  :focus-visible { outline:2px solid #d6b2ff; outline-offset:3px } .status { color:#eac576 }
+</style>
+<h1>PurpleSky</h1>
+<p>Local management console</p>
+<p class="status">Development mode. Live PDS writes are unavailable. Reconstruction uses public test fixtures.</p>
+<label for="token">Admin token from your node's admin.token file</label><br>
+<input id="token" type="password" autocomplete="off" spellcheck="false">
+<div>
+  <button id="status">Refresh status</button>
+  <button id="preflight">Check Hypersnap nodes</button>
+  <button id="reconstruct">Run offline reconstruction</button>
+</div>
+<p id="notice" role="status" aria-live="polite">Enter the local token to begin. It stays in this tab's memory.</p>
+<pre id="result" aria-label="Operation result">No results yet.</pre>
+<script src="/admin.js"></script>
+</html>

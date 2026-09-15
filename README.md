@@ -8,11 +8,14 @@ Farcaster identity. ATProto interoperability. Shared Snapchain persistence.
 
 PurpleSky proposes a **distributed ATProto Personal Data Server (PDS) backed by Hypersnap/Snapchain**. One logical service spans many replaceable nodes, preserving one canonical repository lineage per DID. Farcaster / Ethereum identities can participate natively in the ATmosphere. This is a protocol composition experiment: use one decentralized protocol as infrastructure for another.
 
-**Status: experimental, proposal stage.** Implementation work is beginning with the design. This repository currently contains the static proposal website and documentation, not a working PDS. None of the prototype milestones below has been demonstrated here. This is not production-ready.
+**Status: experimental implementation.** The Rust workspace provides read-only Hypersnap preflight, an offline repository reconstruction harness, and a localhost console. Live storage, Farcaster authentication, protected signing, and Bluesky login remain unimplemented. The distributed network PoC below has not been demonstrated.
 
 Website: [psky.org](https://psky.org/)
 
 Implementation plan and acceptance criteria: [FEATURES.md](FEATURES.md).
+
+Build, run, test, and generate API documentation: [docs/](docs/README.md).
+Current storage findings: [unmodified Hypersnap feasibility](docs/storage-feasibility.md).
 
 > **Existing ATProto implementations should not need to know that Snapchain exists.**
 
@@ -203,7 +206,7 @@ Bob's PDS needs no knowledge of Alice's FID or storage. Mentions and replies sho
 
 ## Prototype milestones: the distributed proof
 
-All steps are proposed and unimplemented. First validate the chosen substrate's mutation admission, ordering/finality, retention/replay, and a protected signing path. Then demonstrate:
+These live-network steps remain unproved. The offline Rust harness tests repository encoding and reconstruction separately. First validate the chosen substrate's mutation admission, ordering/finality, retention/replay, and a protected signing path. Then demonstrate:
 
 1. One FID / ETH-authorized user.
 2. One ordinary `did:plc`.
