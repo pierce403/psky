@@ -1,4 +1,4 @@
-// Optional enhancement: all content, diagrams, and navigation work without JS.
+// Optional control for the shared-write illustration; content works without JS.
 const motionToggle = document.querySelector("#motion-toggle");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 let pausedByUser = false;

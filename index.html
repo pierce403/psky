@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="PurpleSky proposes an ATProto PDS backed by Hypersnap/Snapchain. Farcaster identity. ATProto interoperability. Snapchain persistence. An experimental protocol proposal."
+      content="PurpleSky proposes one logical ATProto PDS across many replaceable nodes, backed by shared Hypersnap/Snapchain state. ATProto over Snapchain. An experimental protocol proposal."
     />
     <meta name="theme-color" content="#0b0911" />
     <meta property="og:type" content="website" />
@@ -13,23 +13,29 @@
     <meta property="og:title" content="PurpleSky — ATProto over Snapchain" />
     <meta
       property="og:description"
-      content="Farcaster identity and Snapchain persistence, exposed as ordinary ATProto. No bridge required. Explore the protocol proposal."
+      content="One logical PDS. Many replaceable nodes. Shared Snapchain state, standard ATProto. Explore the PurpleSky distributed PDS proposal."
     />
     <meta property="og:url" content="https://psky.org/" />
-    <meta property="og:image" content="https://psky.org/social.png" />
+    <meta
+      property="og:image"
+      content="https://psky.org/social.png?v=distributed-pds-1"
+    />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="PurpleSky. ATProto over Snapchain. A purple and blue protocol graph connects Snapchain persistence to ordinary ATProto through a PurpleSky PDS."
+      content="PurpleSky. ATProto over Snapchain. Multiple PurpleSky workers share Snapchain state and serve one standard ATProto repository through one logical PDS."
     />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="PurpleSky — ATProto over Snapchain" />
     <meta
       name="twitter:description"
-      content="An experimental PDS proposal. Farcaster identity. ATProto interoperability. Snapchain persistence."
+      content="An experimental distributed PDS proposal. Any node. Same repository. ATProto over Snapchain."
     />
-    <meta name="twitter:image" content="https://psky.org/social.png" />
+    <meta
+      name="twitter:image"
+      content="https://psky.org/social.png?v=distributed-pds-1"
+    />
     <meta
       name="twitter:image:alt"
       content="PurpleSky: ATProto over Snapchain. An experimental protocol proposal."
@@ -38,8 +44,8 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-    <link rel="stylesheet" href="style.css" />
-    <script src="script.js" defer></script>
+    <link rel="stylesheet" href="style.css?v=distributed-pds-1" />
+    <script src="script.js?v=distributed-pds-1" defer></script>
     <title>PurpleSky — ATProto over Snapchain</title>
   </head>
   <body>
@@ -55,8 +61,7 @@
         >
         <nav aria-label="Main navigation">
           <a href="#architecture">Architecture</a
-          ><a href="#integration">Integration</a
-          ><a href="#prototype">Prototype</a>
+          ><a href="#any-node">Any node</a><a href="#prototype">Prototype</a>
         </nav>
         <a class="header-github" href="https://github.com/pierce403/psky"
           >GitHub <span aria-hidden="true">↗</span></a
@@ -78,8 +83,10 @@
             ATProto. <strong>No bridge required.</strong>
           </p>
           <p class="hero-detail">
-            PurpleSky explores a new foundation for a familiar protocol: an
-            ATProto Personal Data Server backed by Hypersnap/Snapchain.
+            <strong>One logical PDS, many replaceable nodes.</strong> PurpleSky
+            distributes an ATProto service across workers backed by shared
+            Hypersnap/Snapchain state. Your repository belongs to the shared
+            substrate.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#architecture"
@@ -96,9 +103,9 @@
             >View protocol proposal <span aria-hidden="true">→</span></a
           >
         </div>
-        <figure class="hero-figure">
+        <figure class="hero-figure distributed-hero">
           <div class="figure-heading">
-            <span>Fig. 01 / Proposed network</span
+            <span>Fig. 01 / One logical PDS</span
             ><button
               id="motion-toggle"
               type="button"
@@ -110,28 +117,30 @@
           </div>
           <svg
             class="hero-network"
-            viewBox="0 0 620 560"
+            viewBox="0 0 620 650"
             role="img"
             aria-labelledby="network-title network-desc"
           >
             <title id="network-title">
-              Snapchain persistence, ordinary ATProto participation
+              Replaceable nodes. Shared state. One ATProto repository.
             </title>
             <desc id="network-desc">
-              Ethereum and Farcaster identity authorize a PurpleSky PDS.
-              Proposed mutations flow from replicated Snapchain nodes below,
-              through PurpleSky, into standard signed ATProto repositories and
-              the ATProto graph above and to the right. The ATProto network has
-              no Snapchain dependency.
+              An ETH or Farcaster-authorized request enters the PurpleSky
+              logical PDS through node B. The shared Snapchain layer orders the
+              mutation. Deterministic projection and a protected signer produce
+              one standard signed commit, C4. Nodes A and C reconstruct and
+              serve that same canonical state. Relays, AppViews, and clients see
+              one PDS and one repository lineage per DID. This is a proposed
+              sequence, not a live network.
             </desc>
             <defs>
               <linearGradient id="network-gradient" x1="0" y1="1" x2="1" y2="0">
-                <stop stop-color="#b27aff" />
-                <stop offset="1" stop-color="#6ec8ff" />
+                <stop stop-color="#c493ff" />
+                <stop offset="1" stop-color="#7ecbff" />
               </linearGradient>
               <radialGradient id="network-glow">
-                <stop stop-color="#7f46dc" stop-opacity=".2" />
-                <stop offset="1" stop-color="#7f46dc" stop-opacity="0" />
+                <stop stop-color="#74449a" stop-opacity=".22" />
+                <stop offset="1" stop-color="#74449a" stop-opacity="0" />
               </radialGradient>
               <pattern
                 id="network-grid"
@@ -148,149 +157,167 @@
                 refY="5"
                 markerWidth="5"
                 markerHeight="5"
-                orient="auto-start-reverse"
+                orient="auto"
               >
                 <path
                   d="M1 1 8 5 1 9"
                   fill="none"
-                  stroke="#82b9f5"
+                  stroke="#a292bf"
                   stroke-width="1.5"
                 />
               </marker>
             </defs>
-            <rect width="620" height="560" fill="url(#network-grid)" />
+            <rect width="620" height="650" fill="url(#network-grid)" />
             <ellipse
-              cx="303"
-              cy="295"
-              rx="275"
-              ry="242"
+              cx="310"
+              cy="340"
+              rx="290"
+              ry="290"
               fill="url(#network-glow)"
             />
-            <g class="graph-edges graph-blue">
+            <g class="distributed-wires">
               <path
-                d="M396 97 449 67 520 108 563 70M396 97 423 155 488 166 520 108 575 167M449 67 488 166 547 218 575 167M423 155 392 213 458 232 488 166M520 108 547 218M392 213 396 97M458 232 547 218"
-              />
-              <path
-                d="M449 67 477 28M563 70 586 106M575 167 598 209M547 218 577 258"
-                class="graph-faint"
+                d="M310 55V87M310 167V191H112V224M310 191H508V224M310 191V224M112 286C112 322 222 311 255 348M310 286V348M508 286C508 322 398 311 365 348M310 416V425M310 455V473M310 534V569H135V586M310 569V586M310 569H485V586"
+                marker-end="url(#network-arrow)"
               />
             </g>
-            <g class="graph-nodes graph-blue">
-              <circle cx="396" cy="97" r="5" />
-              <circle cx="449" cy="67" r="7" />
-              <circle cx="520" cy="108" r="8" />
-              <circle cx="563" cy="70" r="4" />
-              <circle cx="423" cy="155" r="7" />
-              <circle cx="488" cy="166" r="6" />
-              <circle cx="575" cy="167" r="5" />
-              <circle cx="392" cy="213" r="4" />
-              <circle cx="458" cy="232" r="6" />
-              <circle cx="547" cy="218" r="8" />
-              <circle cx="477" cy="28" r="3" />
-              <circle cx="586" cy="106" r="3" />
-              <circle cx="598" cy="209" r="3" />
-              <circle cx="577" cy="258" r="3" />
-            </g>
-            <text x="400" y="282" class="svg-label blue-label">ATProto</text>
-            <text x="400" y="303" class="svg-small">
-              The ordinary protocol graph
+            <text x="310" y="39" text-anchor="middle" class="svg-mono">
+              ETH / Farcaster identity
             </text>
-            <g class="graph-edges graph-purple">
-              <path
-                d="M70 414 140 376 227 414 156 455 70 414 70 453 156 498 227 454 227 414M140 376 140 416 70 453M140 416 227 454M156 455 156 498M100 432 183 393M108 394 192 434"
-              />
-              <path
-                d="M30 437 70 414M227 454 266 477M156 498 156 523"
-                class="graph-faint"
-              />
-            </g>
-            <g class="graph-nodes graph-purple">
-              <circle cx="70" cy="414" r="6" />
-              <circle cx="140" cy="376" r="6" />
-              <circle cx="227" cy="414" r="6" />
-              <circle cx="156" cy="455" r="7" />
-              <circle cx="70" cy="453" r="5" />
-              <circle cx="140" cy="416" r="5" />
-              <circle cx="156" cy="498" r="6" />
-              <circle cx="227" cy="454" r="5" />
-            </g>
-            <text x="36" y="354" class="svg-label purple-label">Snapchain</text>
-            <text x="282" y="460" class="svg-small">Replicated state</text>
-            <text x="282" y="480" class="svg-small">Proposed mutation log</text>
-            <g class="identity-inputs">
-              <rect x="38" y="74" width="118" height="42" rx="21" />
-              <rect x="99" y="143" width="114" height="42" rx="21" />
-              <circle cx="61" cy="95" r="5" />
-              <circle cx="122" cy="164" r="5" />
-              <text x="77" y="101" class="svg-mono">ETH</text>
-              <text x="138" y="170" class="svg-mono">FID</text>
-              <path d="M99 116 122 143M213 164C252 164 269 198 280 225" />
-            </g>
-            <path
-              class="flow-track"
-              d="M227 414C303 414 220 336 269 322M366 265C398 265 365 155 423 155"
-              marker-end="url(#network-arrow)"
+            <rect
+              x="150"
+              y="87"
+              width="320"
+              height="80"
+              rx="13"
+              fill="#1a1225"
+              stroke="url(#network-gradient)"
             />
-            <path
-              class="flow-packet"
-              d="M227 414C303 414 220 336 269 322M366 265C398 265 365 155 423 155"
-            />
-            <g class="pds-core">
+            <text x="310" y="118" text-anchor="middle" class="svg-label">
+              PurpleSky
+            </text>
+            <text x="310" y="145" text-anchor="middle" class="svg-mono">
+              One logical PDS
+            </text>
+            <g class="worker-boxes">
               <rect
-                x="220"
-                y="222"
-                width="152"
-                height="106"
-                rx="19"
-                fill="#151020"
-                stroke="url(#network-gradient)"
+                class="protocol-motion replay-beacon"
+                x="45"
+                y="224"
+                width="134"
+                height="62"
+                rx="8"
               />
+              <rect x="243" y="224" width="134" height="62" rx="8" />
               <rect
-                x="228"
-                y="230"
-                width="136"
-                height="90"
-                rx="14"
-                fill="none"
-                stroke="#b58aee"
-                stroke-opacity=".12"
+                class="protocol-motion replay-beacon"
+                x="441"
+                y="224"
+                width="134"
+                height="62"
+                rx="8"
               />
-              <path
-                d="M251 278V248H267L278 259 267 271H251"
-                fill="none"
-                stroke="url(#network-gradient)"
-                stroke-width="3"
-                stroke-linejoin="round"
-              />
-              <circle cx="251" cy="278" r="3" fill="#bb8cff" />
-              <circle cx="278" cy="259" r="3" fill="#77bfff" />
-              <text x="296" y="297" text-anchor="middle" class="svg-label">
-                PurpleSky
+              <text x="112" y="251" text-anchor="middle" class="svg-label">
+                Node A
               </text>
-              <text x="292" y="260" class="svg-small">PDS</text>
+              <text x="310" y="251" text-anchor="middle" class="svg-label">
+                Node B
+              </text>
+              <text x="508" y="251" text-anchor="middle" class="svg-label">
+                Node C
+              </text>
+              <text x="112" y="272" text-anchor="middle" class="svg-small">
+                serves shared C4
+              </text>
+              <text x="310" y="272" text-anchor="middle" class="svg-small">
+                accepts write
+              </text>
+              <text x="508" y="272" text-anchor="middle" class="svg-small">
+                serves shared C4
+              </text>
             </g>
-            <g class="record-tag">
-              <rect x="352" y="352" width="242" height="45" rx="7" />
-              <circle cx="369" cy="375" r="3" />
-              <text x="382" y="380" class="svg-code">app.bsky.feed.post</text>
+            <g class="shared-substrate">
+              <rect
+                class="protocol-motion order-beacon"
+                x="135"
+                y="348"
+                width="350"
+                height="68"
+                rx="10"
+              />
+              <path
+                d="M158 381 169 369 181 381 169 393Z"
+                fill="none"
+                stroke="#c493ff"
+              />
+              <text
+                x="320"
+                y="375"
+                text-anchor="middle"
+                class="svg-label purple-label"
+              >
+                Snapchain / Hypersnap
+              </text>
+              <text x="320" y="398" text-anchor="middle" class="svg-small">
+                Shared ordered state · mutation #18422
+              </text>
+            </g>
+            <text x="310" y="447" text-anchor="middle" class="svg-small">
+              Deterministic projection + protected signer
+            </text>
+            <g class="shared-repository">
+              <rect
+                class="protocol-motion commit-beacon"
+                x="152"
+                y="473"
+                width="316"
+                height="61"
+                rx="8"
+              />
+              <text
+                x="310"
+                y="499"
+                text-anchor="middle"
+                class="svg-label blue-label"
+              >
+                One signed ATProto repo
+              </text>
+              <text x="310" y="521" text-anchor="middle" class="svg-small">
+                Shared commit C4 · same DID · same lineage
+              </text>
             </g>
             <path
-              d="M346 329 369 352"
-              stroke="#7696bb"
-              stroke-opacity=".5"
-              fill="none"
-              stroke-dasharray="3 5"
+              class="protocol-motion write-packet"
+              pathLength="100"
+              d="M310 167V224M310 286V348"
             />
-            <text x="361" y="418" class="svg-small">
-              Standard records emerge here
+            <path
+              class="protocol-motion replay-packet"
+              pathLength="100"
+              d="M152 504H24V309H112V286M468 504H596V309H508V286"
+            />
+            <g class="consumer-labels">
+              <text x="135" y="611" text-anchor="middle" class="svg-mono">
+                Relay
+              </text>
+              <text x="310" y="611" text-anchor="middle" class="svg-mono">
+                AppView
+              </text>
+              <text x="485" y="611" text-anchor="middle" class="svg-mono">
+                Client
+              </text>
+            </g>
+            <text x="310" y="637" text-anchor="middle" class="svg-small">
+              Standard APIs at the logical PDS endpoint
             </text>
           </svg>
           <figcaption>
-            <span class="legend-dot purple" aria-hidden="true"></span> Snapchain
-            inside <span class="caption-divider" aria-hidden="true">/</span
-            ><span class="legend-dot blue" aria-hidden="true"></span> ATProto
-            outside
+            Write at B → order → sign once → serve the same state at A + C.
           </figcaption>
+          <p class="diagram-note">
+            Illustrative sequence. All nodes serve the same published head;
+            labels are not live network status.
+          </p>
         </figure>
       </section>
       <div class="principle-band">
@@ -315,8 +342,8 @@
               persistence.
             </p>
             <p>
-              PurpleSky proposes an ATProto PDS implementation backed by
-              Hypersnap/Snapchain. It explores what happens when one
+              PurpleSky proposes a distributed ATProto PDS implementation backed
+              by Hypersnap/Snapchain. It explores what happens when one
               decentralized protocol consumes another as infrastructure.
             </p>
             <p>
@@ -369,126 +396,223 @@
           <div class="section-heading heading-row">
             <div>
               <p class="eyebrow">02 / Architecture</p>
-              <h2 id="architecture-title">The boundary is the design.</h2>
+              <h2 id="architecture-title">
+                One logical PDS.<br />Many replaceable nodes.
+              </h2>
             </div>
             <p>
-              Everything beyond the PDS speaks ATProto.<br />Everything behind
-              it is an implementation choice.
+              The network is the backend.<br />ATProto remains the interface.
             </p>
           </div>
-          <figure class="architecture panel">
+          <figure class="distributed-architecture panel">
             <div class="figure-heading">
-              <span>Fig. 03 / Proposed PDS architecture</span
-              ><span class="small-tag">Level 2</span>
+              <span>Fig. 03 / Three distinct layers</span
+              ><span class="small-tag">Proposed architecture</span>
             </div>
-            <div class="architecture-layout">
-              <div class="arch-identity">
-                <span class="tiny-label">Account authorization</span
-                ><strong>Farcaster / Ethereum</strong><code>FID / wallet</code>
+            <div class="discovery-row">
+              <code>did:plc:…</code><span aria-hidden="true">→</span
+              ><span>PDS service endpoint</span>
+            </div>
+            <div class="service-surface">
+              <span class="tiny-label blue-text"
+                >01 / Service identity · What ATProto sees</span
+              >
+              <h3>PurpleSky logical PDS</h3>
+              <p>Stable endpoint · OAuth / XRPC / repo / sync / blob APIs</p>
+              <span class="service-consumers"
+                >↔ ordinary clients, relays, AppViews, and other PDSs</span
+              >
+            </div>
+            <div class="workers-surface">
+              <div class="layer-caption">
+                <span class="tiny-label">02 / Node layer</span
+                ><span>Interchangeable access points</span>
               </div>
-              <div class="pds-boundary">
-                <div class="boundary-label">
-                  <strong>PurpleSky PDS</strong
-                  ><span>Proposed implementation</span>
-                </div>
-                <div class="arch-layer api-layer">
-                  <span>01</span>
-                  <div>
-                    <strong>Standard ATProto API + sync</strong
-                    ><small>Repositories · CAR data · firehose</small>
-                  </div>
-                  <span aria-hidden="true">↔</span>
-                </div>
-                <div class="layer-connector" aria-hidden="true">↑</div>
-                <div class="arch-layer">
-                  <span>02</span>
-                  <div>
-                    <strong>Repository projection + signing</strong
-                    ><small>Records → MST → signed repo commit</small>
-                  </div>
-                </div>
-                <div class="layer-connector" aria-hidden="true">↑</div>
-                <div class="arch-layer">
-                  <span>03</span>
-                  <div>
-                    <strong>Hypersnap adapter</strong
-                    ><small>Proposed mutation encoding and replay</small>
-                  </div>
-                </div>
-              </div>
-              <div class="arch-network">
-                <span class="tiny-label">Standard ATProto boundary</span
-                ><strong>The ATmosphere</strong>
-                <p>
-                  Unmodified clients<br />Relays<br />AppViews<br />Other PDSs
-                </p>
-                <svg
-                  width="100"
-                  height="32"
-                  viewBox="0 0 100 32"
-                  aria-hidden="true"
-                >
-                  <path
-                    d="M9 23 35 7 63 23 91 7M9 23H63M35 7H91"
-                    fill="none"
-                    stroke="currentColor"
-                  />
-                  <g fill="#0b0911" stroke="currentColor">
-                    <circle cx="9" cy="23" r="4" />
-                    <circle cx="35" cy="7" r="4" />
-                    <circle cx="63" cy="23" r="4" />
-                    <circle cx="91" cy="7" r="4" />
-                  </g>
-                </svg>
-              </div>
-              <div class="arch-storage">
-                <span class="storage-glyph" aria-hidden="true">◇</span>
+              <div class="worker-row">
                 <div>
-                  <strong>Snapchain</strong
-                  ><span
-                    >Proposed canonical persistence / replicated mutation
-                    layer</span
-                  >
+                  <span class="worker-dot" aria-hidden="true"></span>
+                  <h3>Node A</h3>
+                  <p>Authorize · project · serve</p>
+                </div>
+                <div>
+                  <span class="worker-dot" aria-hidden="true"></span>
+                  <h3>Node B</h3>
+                  <p>Authorize · project · serve</p>
+                </div>
+                <div>
+                  <span class="worker-dot" aria-hidden="true"></span>
+                  <h3>Node C</h3>
+                  <p>Authorize · project · serve</p>
                 </div>
               </div>
+              <p class="node-cache-note">
+                Local databases, indexes, MSTs, and CAR caches are
+                reconstructable materialized state.
+              </p>
+            </div>
+            <div class="substrate-surface">
+              <span class="tiny-label"
+                >03 / Canonical replicated substrate</span
+              >
+              <h3>Snapchain / Hypersnap</h3>
+              <p>
+                Shared accepted mutations, ordering, and finality for
+                deterministic repo transitions
+              </p>
             </div>
             <figcaption>
-              Arrows show the projection/read path. Authorized writes would be
-              persisted before their ATProto commit is published.
+              Nodes submit mutations to shared ordering and reconstruct the same
+              published repository state. The logical service routes requests;
+              no node permanently owns an account. Ordinary Snapchain peers do
+              not themselves become ATProto servers.
             </figcaption>
           </figure>
           <div class="architecture-notes">
             <div>
-              <span class="tiny-label">Inside</span>
+              <span class="tiny-label">Service identity</span>
               <p>
-                Snapchain mutations would be the source of truth; local
-                repository blocks and indexes would be materialized views.
+                A stable logical PDS endpoint in the DID document. Routing
+                between workers does not change the DID or its advertised PDS.
               </p>
             </div>
             <div>
-              <span class="tiny-label blue-text">Outside</span>
+              <span class="tiny-label">Replaceable nodes</span>
               <p>
-                A normal DID, independently verifiable repo commits, standard
-                records, and ordinary synchronization.
+                Stateless or mostly materialized gateways. A healthy,
+                authorized, caught-up node should authenticate the user, accept
+                writes, reconstruct the repo, and serve standard APIs.
               </p>
             </div>
             <div>
-              <span class="tiny-label">Still to prove</span>
+              <span class="tiny-label">Shared substrate</span>
               <p>
-                Mutation support, ordering, retention, and replay on the chosen
-                Hypersnap network. No arbitrary event-log capability is assumed.
+                Canonical persistence and ordering come from the chosen network.
+                Mutation admission, finality, retention, and recovery still
+                require proof.
               </p>
             </div>
           </div>
         </div>
       </section>
+
+      <section
+        class="section wrap"
+        id="any-node"
+        aria-labelledby="any-node-title"
+      >
+        <div class="section-heading">
+          <p class="eyebrow">03 / Distributed state</p>
+          <h2 id="any-node-title">Any node. Same repository.</h2>
+          <p class="large-copy">The network is the PDS.</p>
+        </div>
+        <div class="split any-node-intro">
+          <div class="prose">
+            <p>
+              Precisely: PurpleSky presents a single logical PDS to ATProto
+              while distributing its implementation across many nodes backed by
+              shared Snapchain state.
+            </p>
+            <p>
+              Hosted PDS deployments can assign accounts to particular backends
+              or shards. PurpleSky’s proposed authority is the shared substrate.
+              A node is neither the identity authority nor the durable home of a
+              repository.
+            </p>
+          </div>
+          <div class="node-principle">
+            <span class="tiny-label">The distributed invariant</span
+            ><strong>One authoritative repository lineage per DID.</strong>
+            <p>
+              Users migrate onto the PurpleSky logical PDS. Switching PurpleSky
+              workers is routing or failover, not account migration.
+            </p>
+          </div>
+        </div>
+        <div class="concurrency-heading">
+          <h3>Concurrent requests. A single history.</h3>
+          <p>
+            If A receives “follow Bob” while B receives “post Hello,” both
+            submit to the same ordering layer. Neither publishes an
+            independently chosen repo head.
+          </p>
+        </div>
+        <figure class="concurrency-diagram panel">
+          <div class="concurrent-inputs">
+            <div>
+              <span class="tiny-label">Node A</span><code>follow Bob</code>
+            </div>
+            <div>
+              <span class="tiny-label">Node B</span><code>post Hello</code>
+            </div>
+          </div>
+          <div class="ordered-mutations">
+            <span class="tiny-label">Snapchain ordering / finality</span>
+            <div><code>#9001 follow</code><code>#9002 post</code></div>
+          </div>
+          <p class="projection-label">
+            Deterministic repo transitions + normal ATProto signatures
+          </p>
+          <div
+            class="repo-lineage"
+            role="img"
+            aria-label="One ordered sequence of canonical repository revisions: C1, C2, C3, C4. All nodes serve this lineage."
+          >
+            <span>C1</span><i aria-hidden="true">→</i><span>C2</span
+            ><i aria-hidden="true">→</i><span>C3</span
+            ><i aria-hidden="true">→</i><span class="current-commit">C4</span>
+          </div>
+          <figcaption>
+            Illustrative order and revisions, not a new commit hash-chain
+            format. The transition/commit policy must produce the same published
+            head on every node.
+          </figcaption>
+        </figure>
+        <details class="technical-detail">
+          <summary>
+            Concurrency, finality, and failover: what still needs to be
+            specified?
+          </summary>
+          <div class="detail-content split">
+            <div>
+              <p>
+                Define ordering within each DID, commit boundaries, stable
+                record keys, monotonic revisions, idempotency keys, retry
+                behavior, and conflict/precondition handling. An accepted
+                request must not become two commits when retried at another
+                worker.
+              </p>
+              <p>
+                Nodes publish only after the agreed ordering/finality condition
+                and signing step. A lagging or partitioned worker must catch up,
+                forward, wait, or fail the request; it cannot claim to serve the
+                current head or create an independent canonical fork.
+              </p>
+            </div>
+            <div>
+              <p>
+                The logical service also needs shared session/revocation
+                semantics, consistent read watermarks, and resumable firehose
+                cursors across node changes. Ordering mutations alone does not
+                solve these service guarantees.
+              </p>
+              <p>
+                Canonical commit metadata and signed artifacts must be
+                recoverable, so two workers serving the same revision return the
+                same commit CID. Signer failover needs fencing to prevent
+                competing publishers. These are open implementation problems.
+              </p>
+            </div>
+          </div>
+        </details>
+      </section>
+
       <section
         class="section wrap"
         id="compatibility"
         aria-labelledby="compatibility-title"
       >
         <div class="section-heading">
-          <p class="eyebrow">03 / Compatibility</p>
+          <p class="eyebrow">04 / Compatibility</p>
           <h2 id="compatibility-title">Why this can work.</h2>
           <p>
             The PDS abstraction separates a repository’s public contract from
@@ -555,59 +679,234 @@
         aria-labelledby="identity-title"
       >
         <div class="section-heading">
-          <p class="eyebrow">04 / Identity</p>
+          <p class="eyebrow">05 / Identity and signing</p>
           <h2 id="identity-title">
-            Farcaster at the root.<br />A DID on the network.
+            A stable identity.<br />Distinct kinds of authority.
           </h2>
-        </div>
-        <div class="identity-panel panel">
-          <div
-            class="identity-flow"
-            role="img"
-            aria-label="An Ethereum wallet proves authority for Farcaster FID 403, which binds to a PurpleSky account and a standard ATProto DID. Passkeys are possible future authentication for the PurpleSky account, not proof of FID ownership."
-          >
-            <div class="identity-step">
-              <span class="tiny-label">Authenticate</span
-              ><strong>ETH wallet</strong><code>0x…</code>
-            </div>
-            <span class="identity-arrow" aria-hidden="true">→</span>
-            <div class="identity-step">
-              <span class="tiny-label">Prove authority</span
-              ><strong>Farcaster FID</strong><code>403</code>
-            </div>
-            <span class="identity-arrow" aria-hidden="true">→</span>
-            <div class="identity-step identity-account">
-              <span class="tiny-label">Bind account</span
-              ><strong>PurpleSky</strong
-              ><span class="future-auth"
-                >Passkey? <small>Future auth</small></span
-              >
-            </div>
-            <span class="identity-arrow" aria-hidden="true">→</span>
-            <div class="identity-step">
-              <span class="tiny-label blue-text">Public identity</span
-              ><strong>ATProto DID</strong><code>did:plc:…</code>
-            </div>
-          </div>
-          <p class="identity-caption">
-            Illustrative mapping. The FID ↔ DID proof format, wallet-only
-            accounts, and account recovery are still open design decisions.
+          <p>
+            A handle names the user. A DID identifies the account. Login
+            authority, repo signing, and DID rotation have different jobs.
           </p>
+        </div>
+        <div class="split key-diagrams">
+          <figure class="key-diagram panel">
+            <div class="figure-heading">
+              <span>Fig. 04 / Public ATProto identity</span>
+            </div>
+            <div class="identity-root">
+              <code>deanpierce.net</code><span>Human-readable handle</span
+              ><span class="down-arrow" aria-hidden="true">↓</span
+              ><code>did:plc:…</code><span>Stable ATProto identity</span>
+            </div>
+            <div class="did-branches">
+              <div>
+                <span class="tiny-label">PDS service</span
+                ><strong>PurpleSky</strong><small>One logical endpoint</small>
+              </div>
+              <div>
+                <span class="tiny-label blue-text">Repo verification key</span
+                ><strong>Public key</strong
+                ><small>Verifies signed commits</small>
+              </div>
+            </div>
+            <figcaption>
+              Illustrative identity. The handle resolves to the DID; the DID
+              document advertises the PDS and operational repo verification key.
+            </figcaption>
+          </figure>
+          <figure class="key-diagram auth-diagram panel">
+            <div class="figure-heading">
+              <span>Fig. 05 / User authorization</span>
+            </div>
+            <ol class="authority-flow">
+              <li>
+                <strong>Farcaster / ETH</strong
+                ><span>Authenticates and authorizes the user</span>
+              </li>
+              <li>
+                <strong>PurpleSky account</strong
+                ><span>Shared authority and revocation rules</span>
+              </li>
+              <li>
+                <strong>Operational ATProto signer</strong
+                ><span>Signs authorized canonical repo commits</span>
+              </li>
+            </ol>
+            <figcaption>
+              The Ethereum wallet does not directly sign every ATProto record. A
+              normal repo key signs the repository commit.
+            </figcaption>
+          </figure>
         </div>
         <div class="identity-notes">
           <p>
-            Farcaster/ETH authenticates and authorizes the account. A separate
-            ATProto repo signing key produces standard commits. Key custody,
-            rotation, and DID recovery authority must be designed explicitly.
+            Start with a normal <code>did:plc</code>, including an existing DID
+            brought by migration. Prove the FID ↔ DID binding; retain standard
+            ATProto client auth at the service boundary. No
+            <code>did:farcaster</code> is proposed.
           </p>
           <p>
-            Use a currently interoperable ATProto DID mechanism, preferably
-            <code>did:plc</code>; do not introduce <code>did:farcaster</code>.
-            Wallet sign-in would live behind the PDS’s standard client
-            authorization flow.
+            <strong
+              >DID/PLC rotation authority is separate from the operational repo
+              key.</strong
+            >
+            It authorizes identity updates such as changing the PDS endpoint or
+            verification key. Farcaster/ETH-assisted recovery and rotation,
+            wallet-only accounts, and passkeys remain research.
           </p>
         </div>
+        <div class="concurrency-heading">
+          <h3>Many gateways do not mean many copies of a hot key.</h3>
+          <p>
+            Distributed repo signing is an open implementation problem. An
+            initial proof can use one protected signer service, with explicit
+            custody and access controls.
+          </p>
+        </div>
+        <figure class="signer-panel panel">
+          <ol class="signer-flow">
+            <li><span>PurpleSky nodes</span><strong>A / B / C</strong></li>
+            <li>
+              <span>Shared ordering</span><strong>Confirmed mutation</strong>
+            </li>
+            <li>
+              <span>Initial signing design</span
+              ><strong>Protected signer</strong>
+            </li>
+            <li>
+              <span>Public output</span><strong>Valid ATProto commit</strong>
+            </li>
+          </ol>
+          <figcaption>
+            The signer must authorize the ordered state transition, enforce one
+            canonical publisher per account, and make the signed result
+            recoverable by other nodes. A single signer concentrates
+            availability and trust; failover still needs fencing.
+          </figcaption>
+        </figure>
+        <details class="technical-detail">
+          <summary>
+            Signing research: threshold, delegation, and hardware protection
+          </summary>
+          <div class="detail-content split">
+            <div>
+              <p>
+                Longer-term candidates include threshold or distributed signing,
+                delegated short-lived signing authority, secure/HSM-backed
+                signing, and other compatible mechanisms.
+              </p>
+              <p>
+                These are research options, not established ATProto
+                integrations. Delegation cannot assume consumers understand a
+                new certificate chain or signature format.
+              </p>
+            </div>
+            <div>
+              <p>
+                <strong
+                  >Every externally visible repo commit must be a normal valid
+                  ATProto signed commit.</strong
+                >
+                Any signing arrangement must satisfy the accepted algorithm,
+                key, encoding, and DID verification requirements.
+              </p>
+              <a
+                class="source-link"
+                href="https://atproto.com/specs/cryptography"
+                >ATProto cryptography <span aria-hidden="true">↗</span></a
+              >
+            </div>
+          </div>
+        </details>
       </section>
+
+      <section
+        class="section migration-section"
+        id="migration"
+        aria-labelledby="migration-title"
+      >
+        <div class="wrap">
+          <div class="section-heading">
+            <p class="eyebrow">06 / Account migration</p>
+            <h2 id="migration-title">
+              Move your hosting.<br />Keep your identity.
+            </h2>
+            <p>
+              The migration is from an ordinary PDS to the PurpleSky logical
+              PDS. Moving between PurpleSky nodes should not be a migration at
+              all.
+            </p>
+          </div>
+          <figure class="migration-figure">
+            <div class="migration-panes">
+              <div class="migration-pane panel">
+                <span class="tiny-label">Before / Ordinary PDS</span
+                ><code>deanpierce.net</code
+                ><span class="migration-arrow" aria-hidden="true">↓</span
+                ><code>did:plc:…</code
+                ><span class="migration-arrow" aria-hidden="true">↓</span
+                ><strong>Current PDS</strong
+                ><small>For example, a Bluesky-hosted account</small>
+              </div>
+              <div class="migration-pane panel migration-after">
+                <span class="tiny-label blue-text">After / PurpleSky</span
+                ><code>deanpierce.net</code
+                ><span class="migration-arrow" aria-hidden="true">↓</span
+                ><code>did:plc:…</code
+                ><span class="migration-arrow" aria-hidden="true">↓</span
+                ><strong>PurpleSky logical PDS</strong
+                ><small>Distributed nodes + shared Snapchain state</small>
+              </div>
+            </div>
+            <figcaption>
+              Same custom handle. Same DID. A different PDS service endpoint.
+              This illustrates the proposed migration path; no account migration
+              has been performed here.
+            </figcaption>
+          </figure>
+          <div class="migration-notes">
+            <p>
+              A custom domain handle can continue resolving to the same DID. The
+              DID’s PDS service endpoint changes to PurpleSky; the operational
+              repo verification key can change as part of an authorized
+              migration.
+            </p>
+            <p>
+              The user need not extract the old PDS’s private signing key.
+              Import the repository and blobs, authorize the identity update
+              using the applicable DID/PLC authority, then coordinate activation
+              and deactivation so only one PDS is authoritative.
+            </p>
+          </div>
+          <details class="technical-detail">
+            <summary>Preserving data and the exit path</summary>
+            <div class="detail-content split">
+              <p>
+                Keeping the DID does not by itself copy content. Import and
+                verify the repository, transfer blobs and relevant private
+                preferences, and establish a shared bootstrap checkpoint from
+                which every PurpleSky node can reconstruct. Retain custom-domain
+                control and verify the handle binding.
+              </p>
+              <div>
+                <p>
+                  Migration back to an ordinary PDS should retain the DID and
+                  repository too. Import/export, signing-key rotation, account
+                  cutover, and recovery when the old provider is unavailable
+                  remain prototype work.
+                </p>
+                <a
+                  class="source-link"
+                  href="https://atproto.com/guides/account-migration"
+                  >ATProto account migration
+                  <span aria-hidden="true">↗</span></a
+                >
+              </div>
+            </div>
+          </details>
+        </div>
+      </section>
+
       <section
         class="section graph-section"
         id="one-graph"
@@ -615,7 +914,7 @@
       >
         <div class="wrap">
           <div class="section-heading">
-            <p class="eyebrow">05 / Native participation</p>
+            <p class="eyebrow">07 / Native participation</p>
             <h2 id="graph-title">
               Different storage.<br /><span class="blue-text"
                 >Same protocol graph.</span
@@ -632,7 +931,7 @@
                 <div class="person alice">
                   <span class="avatar" aria-hidden="true">A</span>
                   <h3>Alice</h3>
-                  <span>PurpleSky PDS</span><code>FID 100 + DID</code
+                  <span>PurpleSky logical PDS</span><code>FID 100 + DID</code
                   ><small>Snapchain persistence</small>
                 </div>
                 <div class="person bob">
@@ -682,7 +981,7 @@
       >
         <div class="section-heading heading-row">
           <div>
-            <p class="eyebrow">06 / Integration depth</p>
+            <p class="eyebrow">08 / Integration depth</p>
             <h2 id="integration-title">Three ways in.</h2>
           </div>
           <p>
@@ -792,68 +1091,62 @@ delete app.bsky.feed.post/old</code></pre>
         <div class="wrap">
           <div class="section-heading heading-row">
             <div>
-              <p class="eyebrow">07 / First proof</p>
-              <h2 id="prototype-title">Small enough to prove.</h2>
+              <p class="eyebrow">09 / The distributed proof</p>
+              <h2 id="prototype-title">
+                Write at A.<br />Rebuild at B. Verify anywhere.
+              </h2>
             </div>
             <span class="status-label"
               ><span class="status-dot" aria-hidden="true"></span> All
               milestones proposed</span
             >
           </div>
-          <ol class="milestones">
+          <ol class="distributed-milestones">
+            <li>Authorize one user through an FID / Ethereum identity.</li>
+            <li>Bind one ordinary <code>did:plc</code>.</li>
+            <li>Submit a post through PurpleSky node A.</li>
+            <li>Persist and order its mutation through Hypersnap/Snapchain.</li>
+            <li>Start node B with empty local projection state.</li>
+            <li>Have B reconstruct the current repo from shared state.</li>
+            <li>Have B serve a valid <code>com.atproto.sync.getRepo</code>.</li>
+            <li>Verify the result with an unmodified ATProto consumer.</li>
             <li>
-              <span class="milestone-number">01</span>
-              <h3>One identity</h3>
-              <p>1 FID ↔ 1 DID<br />Farcaster / ETH login</p>
-            </li>
-            <li>
-              <span class="milestone-number">02</span>
-              <h3>One mutation log</h3>
-              <p>Snapchain persistence<br />Profile · post · follow</p>
-            </li>
-            <li>
-              <span class="milestone-number">03</span>
-              <h3>One valid repo</h3>
-              <p>Records → MST<br />Standard repo signature</p>
-            </li>
-            <li>
-              <span class="milestone-number">04</span>
-              <h3>One consumer</h3>
-              <p>
-                <code>getRepo</code> + <code>subscribeRepos</code
-                ><br />Unmodified ATProto reader
-              </p>
+              Submit a second mutation through B; have A serve the resulting
+              head on the same canonical lineage.
             </li>
           </ol>
           <div class="acceptance-test">
-            <span class="tiny-label">The acceptance test</span>
+            <span class="tiny-label">The thesis to prove</span>
             <blockquote>
-              If an unmodified ATProto relay/AppView can consume and verify a
-              PurpleSky repository, the abstraction is working.
+              Account state belongs to PurpleSky’s shared substrate, not to a
+              PurpleSky machine.
             </blockquote>
             <p>
-              The first meaningful proof: a post originating from state
-              persisted through Snapchain appears and verifies correctly in an
-              unmodified ATProto consumer/AppView.
+              If an unmodified ATProto relay/AppView can consume and verify a
+              PurpleSky repository, the abstraction is working. The distributed
+              proof additionally requires another node to recover and continue
+              that same repository.
             </p>
           </div>
           <p class="section-note">
-            First prove the adapter can persist and replay the required
-            operations. Then publish through
-            <code>com.atproto.sync.getRepo</code> and
-            <code>com.atproto.sync.subscribeRepos</code>, test restart/replay
-            and stream resumption, and verify with existing software. Public
-            AppView indexing also depends on discovery and service policies.
+            Begin by validating the substrate and a protected signer. Then cover
+            profile, post, follow, updates/deletes, concurrent writes, retries,
+            restart/replay, and
+            <code>com.atproto.sync.subscribeRepos</code> resumption across
+            nodes. Compare record CIDs, MST roots, revisions, and signed commit
+            CIDs at the same publication watermark. Public AppView ingestion
+            still depends on discovery and service policies.
           </p>
         </div>
       </section>
+
       <section
         class="section wrap"
         id="questions"
         aria-labelledby="questions-title"
       >
         <div class="section-heading">
-          <p class="eyebrow">08 / Open research</p>
+          <p class="eyebrow">10 / Open research</p>
           <h2 id="questions-title">
             The interesting questions<br />are still open.
           </h2>
@@ -868,18 +1161,27 @@ delete app.bsky.feed.post/old</code></pre>
               What should be canonical: Snapchain mutations or ATProto blocks?
             </li>
             <li>How should an FID ↔ DID binding be represented and proven?</li>
-            <li>Who controls and rotates the ATProto repo signing key?</li>
+            <li>
+              How can protected or distributed signing preserve one canonical
+              commit without copying hot keys to every node?
+            </li>
             <li>
               Can repository reconstruction from Snapchain be fully
               deterministic?
             </li>
-            <li>How should conflicting or concurrent mutations be resolved?</li>
+            <li>
+              How should finality, concurrent writes, retries, read watermarks,
+              and cross-node firehose resumption work?
+            </li>
           </ol>
           <ol start="6">
             <li>
               How much Farcaster-native data fits existing Lexicons directly?
             </li>
-            <li>What recovery path exists if PurpleSky disappears?</li>
+            <li>
+              How can a new node reconstruct state after failures, pruning, or
+              signer loss?
+            </li>
             <li>
               Can an account migrate to an ordinary PDS while retaining its DID
               and repository?

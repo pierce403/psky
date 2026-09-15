@@ -2,9 +2,11 @@
 
 ## ATProto over Snapchain
 
-**Farcaster identity. ATProto interoperability. Snapchain persistence.**
+**ATProto over Snapchain. One logical PDS, many nodes.**
 
-PurpleSky proposes an **ATProto Personal Data Server (PDS) backed by Hypersnap/Snapchain**, allowing Farcaster / Ethereum identities to participate natively in the ATmosphere. This is a protocol composition experiment: use one decentralized protocol as infrastructure for another.
+Farcaster identity. ATProto interoperability. Shared Snapchain persistence.
+
+PurpleSky proposes a **distributed ATProto Personal Data Server (PDS) backed by Hypersnap/Snapchain**. One logical service spans many replaceable nodes, preserving one canonical repository lineage per DID. Farcaster / Ethereum identities can participate natively in the ATmosphere. This is a protocol composition experiment: use one decentralized protocol as infrastructure for another.
 
 **Status: experimental, proposal stage.** Implementation work is beginning with the design. This repository currently contains the static proposal website and documentation, not a working PDS. None of the prototype milestones below has been demonstrated here. This is not production-ready.
 
@@ -20,6 +22,9 @@ The corresponding implementation test:
 
 Goals:
 
+- Make account state belong to the shared substrate, with interchangeable workers behind one logical ATProto PDS endpoint.
+- Preserve one authoritative repository lineage per DID even when writes enter through multiple nodes.
+
 - Authenticate with a Farcaster identity and/or associated Ethereum identity, binding account authority to a standard ATProto DID.
 - Explore Hypersnap/Snapchain as the canonical replicated mutation layer behind a PDS.
 - Expose ordinary ATProto records, repositories, CAR data, APIs, and firehose events.
@@ -28,46 +33,124 @@ Goals:
 
 Non-goals for the initial experiment:
 
+- Pinning accounts to PurpleSky machines, treating workers as independent PDSs, or merging independently authoritative ATProto repo forks.
+
 - Copying Farcaster posts into Bluesky as synthetic bridge accounts.
 - Introducing `did:farcaster`, changing ATProto, or requiring Snapchain-aware clients, relays, or AppViews.
 - Treating Snapchain consensus or a wallet signature as a substitute for ATProto repo signatures.
 - Claiming that Farcaster and ATProto already share native message or signing semantics.
 - Building a production network or full PDS before proving the smallest interoperability path.
 
-## Architecture
+## One logical PDS, many nodes
+
+**Any node. Same repository.** A PurpleSky account is not permanently owned by, or pinned to, a PurpleSky machine. ATProto sees one logical PDS service; its implementation is distributed across interchangeable PurpleSky workers backed by shared Hypersnap/Snapchain state.
+
+> **The network is the PDS.** More precisely, PurpleSky presents a single logical PDS to ATProto while distributing its implementation across many nodes backed by shared Snapchain state.
+
+This does not mean arbitrary Snapchain peers implement ATProto. PurpleSky workers implement the service boundary, under a common identity, authorization, publication, and consistency policy.
+
+| Layer                   | Responsibility                                                                                               | Durable account ownership                                                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------- |
+| **Service identity**    | Stable logical PDS endpoint advertised by the DID; standard OAuth, XRPC, repo, sync/firehose, and blob APIs. | The advertised service is PurpleSky, not a particular worker.                                                 |
+| **PurpleSky nodes**     | Authenticate/authorize, submit mutations, reconstruct repositories, and serve standard APIs.                 | No permanent node ownership. Local DBs, indexes, MSTs, and CAR caches are reconstructable materialized state. |
+| **Snapchain/Hypersnap** | Shared canonical replicated mutation substrate, ordering, and finality for the proposed projection.          | Account/repository state belongs to the shared substrate, subject to a proven retention/recovery design.      |
 
 ```mermaid
 flowchart TD
-  identity["Farcaster / Ethereum identity: FID / wallet"] --> api
-  subgraph pds["PurpleSky PDS — proposed"]
-    api["Standard ATProto API + sync"]
-    projection["Repository projection + signing"]
-    adapter["Hypersnap adapter"]
-    adapter --> projection --> api
+  did["User DID"] -->|"PDS service endpoint"| service
+  consumers["ATProto clients, relays, and AppViews"] <--> service
+  service["PurpleSky: one logical PDS service"]
+  subgraph workers["Replaceable PurpleSky nodes"]
+    a["Node A"]
+    b["Node B"]
+    c["Node C"]
   end
-  snapchain["Snapchain: replicated mutation layer"] --> adapter
-  api <--> network["Ordinary ATProto clients, relays, AppViews, and PDSs"]
+  service --> a & b & c
+  a & b & c <--> state["Snapchain / Hypersnap: shared ordered state"]
 ```
 
-The upward arrows describe the projection/read path. On the proposed write path, PurpleSky authenticates and authorizes the account, validates a mutation, persists it through the adapter, then projects and publishes the result after the required ordering/finality condition. The acknowledgment point is an open design decision.
+Any healthy, authorized, caught-up worker should eventually be able to authenticate Alice, read her current account/repository state, accept a mutation, submit it to shared ordering, derive the canonical resulting state, and serve her standard ATProto APIs. A new worker should be able to reconstruct from shared history or an authenticated bootstrap checkpoint without the old worker's local disk.
 
-The PDS boundary stays ordinary ATProto. Consumers resolve a DID and verification key, verify a signed repo commit, traverse its Merkle Search Tree (MST), and read standard records such as:
+Service routing, node admission, shared authorization/session revocation, protected private account metadata, and read consistency remain implementation work. Authentication secrets do not belong in a public mutation log. A stale or partitioned node must catch up, forward, wait, or fail a request; it cannot claim to serve the current head or independently publish a competing head.
 
-- `app.bsky.feed.post`
-- `app.bsky.graph.follow`
-- `app.bsky.actor.profile`
+Users migrate **from an ordinary PDS to the PurpleSky logical PDS**. Switching PurpleSky workers is request routing/failover, not migration; the DID and logical service endpoint stay the same. Endpoint routing and the required availability model are open design choices, not guarantees already delivered.
 
-Like a PDS backed by SQLite, Postgres, or S3, the backing storage is an implementation detail. This boundary is the proposal's compatibility constraint, not an interoperability result already achieved.
+## One canonical repository lineage per DID
 
-## Identity and signing model
+> **Writes can enter through multiple nodes. ATProto must still see one authoritative repository lineage per DID.**
 
-An illustrative account mapping is **ETH wallet → FID 403 → PurpleSky account → `did:plc:…` → ATProto repository**. Farcaster authentication can establish the FID directly; Ethereum authentication must prove the wallet's current authority for the FID. A wallet address alone is not an FID ownership proof.
+For example, node A receives `follow Bob` while node B receives `post Hello`. Neither independently chooses a new canonical head. Both submit to the same ordering/finality substrate; a possible accepted order is `#9001 follow`, then `#9002 post`. Deterministic transitions and the publication/signing policy yield one sequence of repo revisions.
 
-Start with `did:plc`, or another currently interoperable ATProto-supported DID mechanism. The [DID specification](https://atproto.com/specs/did) currently supports `did:plc` and hostname-based `did:web`. No new DID method is proposed. Publish normal DID documents, verification keys, PDS service endpoints, and handle bindings.
+```mermaid
+flowchart TD
+  a["Node A: follow Bob"] --> ordered
+  b["Node B: post Hello"] --> ordered
+  ordered["Snapchain order: 9001 follow, 9002 post"] --> projection["Canonical state transitions + protected signing"]
+  projection --> c3["C3: follow applied"]
+  c2["C2: previous published state"] --> c3
+  c3 --> c4["C4: post applied"]
+  c4 --> readers["All workers serve the same published lineage"]
+```
 
-Farcaster/ETH establishes account authorization; the ATProto DID is the public interoperability identity. Standard clients should use standard ATProto authorization, with wallet/Farcaster login behind the PDS's authorization interface. They should not need Farcaster-specific code. Wallet-only accounts, passkeys, and other authentication methods are possible future work, not committed admission mechanisms.
+`C2 → C3 → C4` denotes revision/state order, not a new hash-chain format or a requirement to populate the ATProto commit's `prev` field. Standard v3 repository commits normally use `prev: null`; valid monotonic revisions, MSTs, signatures, and sync semantics still apply. See the [repository specification](https://atproto.com/specs/repository).
 
-Each account still needs an ATProto repo signing key. The [repository specification](https://atproto.com/specs/repository) defines the signed commit and MST formats; [ATProto cryptography](https://atproto.com/specs/cryptography) defines the accepted signature semantics. Key custody, signing authorization, rotation, DID recovery authority, and the proof/revocation of an FID ↔ DID binding remain design work. Snapchain replication does not recover signing keys.
+Canonical mutation order alone does not settle all publication details. Specify per-DID commit boundaries, record keys, revisions, expected-state preconditions, conflict handling, idempotency keys, and retry semantics. Retrying through another worker must not apply a request twice. Publish only after the chosen finality condition and a valid signing step, with one canonical mapping from the ordered state to published commits.
+
+Persist or otherwise recover the canonical commit metadata and signed artifacts so that workers at the same publication watermark serve the same revision and **signed commit CID**, not merely the same MST root. Signer failover needs fencing against competing publishers. The logical firehose needs consistent event ordering and resumable cursor semantics when a connection moves between workers. These remain open design problems.
+
+## ATProto compatibility constraint
+
+Existing clients, relays, AppViews, and other PDSs must not need Snapchain-specific code. Consumers resolve a normal DID and verification key, verify signed repo commits, traverse standard MSTs, and consume standard CAR data and records such as `app.bsky.feed.post`, `app.bsky.graph.follow`, and `app.bsky.actor.profile`.
+
+Internally, PurpleSky obtains state and ordering from its shared substrate. Externally, it implements standard ATProto APIs and sync/firehose events. Snapchain consensus does not replace ATProto signatures. Full OAuth/client authentication, account lifecycle, blobs, identity/account events, discovery, and operational behavior still need implementation; a pair of sync endpoints alone is not a complete PDS.
+
+## Identity, authentication, and key layers
+
+Prefer a normal `did:plc`, including an existing DID retained during migration. The [DID specification](https://atproto.com/specs/did) also supports hostname-based `did:web`; no `did:farcaster` or other new DID method is proposed.
+
+```mermaid
+flowchart TD
+  handle["deanpierce.net: human-readable handle"] --> did["did:plc:…: stable ATProto identity"]
+  did --> service["PDS service: PurpleSky logical endpoint"]
+  did --> key["Operational repo verification key"]
+  rotation["DID / PLC rotation authority"] -.->|"Authorizes identity updates"| did
+```
+
+This is an illustrative identity, not a claim about that domain's current DID or a migration performed here. Separately, the authorization path is **Farcaster/ETH → PurpleSky account authorization → operational ATProto signer**. The user's wallet does not directly sign every ATProto record; the operational repo key signs standard repository commits.
+
+| Authority                            | Purpose                                                                                                                                        |
+| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Farcaster / Ethereum                 | Authenticate/authorize the PurpleSky user and prove the FID ↔ DID binding. A wallet address alone does not prove current FID authority.       |
+| Operational ATProto repo signing key | Sign repo commits that existing ATProto implementations verify against the DID's repo verification key.                                        |
+| DID / PLC rotation authority         | Authorize changes to identity metadata, such as the PDS service endpoint and operational verification key. This is distinct from repo signing. |
+
+Standard clients should use standard ATProto authorization, with Farcaster/ETH login behind the logical service interface. Binding revocation, FID transfers, and session revocation must be consistent across nodes. Wallet-only accounts, passkeys, and Farcaster/ETH participation in recovery or rotation are research; they are not existing ATProto identity mechanisms.
+
+### Distributed repo signing
+
+**Any node accepting writes must not mean copying one hot private key onto every node.** Signing is an explicit distributed-systems and key-custody problem.
+
+A first proof can use a **single protected signer service**: workers submit mutations to Snapchain; the signer authorizes confirmed canonical transitions, enforces the publication policy, produces ordinary ATProto signed commits, and makes the signed results recoverable by other workers. The repo key can remain isolated from the API nodes. This introduces a signing availability/trust bottleneck; restart, rotation, and fenced failover still need design.
+
+Longer-term candidates include threshold signing, distributed signing, delegated short-lived signing authority, secure/HSM-backed signing, or another arrangement consistent with [ATProto cryptography](https://atproto.com/specs/cryptography). These are unproven options. Delegation cannot assume consumers accept a new certificate chain; threshold schemes must be researched against the required algorithms, public keys, encoding, and verification behavior.
+
+> **Every externally visible repo commit must be a normal valid ATProto signed commit.**
+
+## Migration onto and off PurpleSky
+
+Hosting can change while an existing custom handle and DID remain stable:
+
+| Field                | Before                          | After                                                |
+| -------------------- | ------------------------------- | ---------------------------------------------------- |
+| Custom handle        | `deanpierce.net`                | `deanpierce.net`                                     |
+| ATProto identity     | Existing `did:plc:…`            | The **same** `did:plc:…`                             |
+| DID's PDS service    | Current provider's PDS endpoint | PurpleSky's stable logical PDS endpoint              |
+| Implementation       | Current provider's backend      | Distributed PurpleSky nodes + shared Snapchain state |
+| Operational repo key | Current PDS's signing key       | May rotate to a PurpleSky signing arrangement        |
+
+The custom domain can continue resolving to the same DID. The user need not extract the old PDS's private signing key. The applicable DID/PLC authority authorizes the service/key update. Following the [ATProto migration flow](https://atproto.com/guides/account-migration), import the repo and blobs, transfer relevant preferences, update identity metadata, and coordinate activation/deactivation so only one PDS remains authoritative.
+
+Identity continuity is not automatic data recovery: imported repository contents need a shared, verified bootstrap checkpoint from which PurpleSky workers can reconstruct. Blob availability, handle control, and recovery authority must survive the move. Migration back to an ordinary PDS should retain the DID and repository too. These are proposed implementation requirements; the site does not perform migrations.
 
 ## Storage model and three integration levels
 
@@ -100,7 +183,7 @@ Conceptually, one substrate could eventually expose an ATProto view, a Farcaster
 
 ## Native participation: one graph, different storage
 
-Alice uses a PurpleSky PDS, an FID and DID, and Snapchain persistence. Bob has a DID and uses a conventional PDS. Alice follows Bob by publishing a normal record in her ATProto repository:
+Alice uses the PurpleSky logical PDS, an FID and DID, and Snapchain persistence. Bob has a DID and uses a conventional PDS. Alice follows Bob by publishing a normal record in her ATProto repository:
 
 ```json
 {
@@ -116,40 +199,47 @@ Bob's PDS needs no knowledge of Alice's FID or storage. Mentions and replies sho
 
 **Can two fundamentally different storage architectures participate transparently in the same ATProto social graph?** That is the experiment.
 
-## Prototype milestones
+## Prototype milestones: the distributed proof
 
-All milestones are proposed and unchecked:
+All steps are proposed and unimplemented. First validate the chosen substrate's mutation admission, ordering/finality, retention/replay, and a protected signing path. Then demonstrate:
 
-- [ ] **Validate the substrate.** Select and document a Hypersnap/Snapchain network and operation encoding; prove accepted mutations can be persisted, read back, and replayed under its retention rules.
-- [ ] **Bind one identity.** One FID, one standard DID, Farcaster/ETH login, and explicit repo key custody. Test the binding's authorization and revocation assumptions.
-- [ ] **Persist a tiny social state.** Profile, post, follow, plus updates and deletion; stable keys and a defined order for concurrent/retried mutations.
-- [ ] **Project a valid repo.** Standard records, deterministic MST, normal independently verifiable signatures. Rebuild after discarding local projection caches and compare record CIDs and the root.
-- [ ] **Expose sync.** Implement `com.atproto.sync.getRepo` and `com.atproto.sync.subscribeRepos` according to the [sync specification](https://atproto.com/specs/sync), with valid CAR exports/events and resumption behavior.
-- [ ] **Demonstrate an unmodified consumer.** Publish a post from persisted Snapchain state and show an existing ATProto consumer/AppView consuming and correctly verifying it. Record the consumer/version, procedure, exported CAR, and verification output.
-- [ ] **Probe failure and exit paths.** Restart/replay, stream gaps, deletion, key rotation, and migration to a conventional PDS retaining the DID and repository.
+1. One FID / ETH-authorized user.
+2. One ordinary `did:plc`.
+3. A post submitted through PurpleSky node A.
+4. Its mutation persisted and ordered through Hypersnap/Snapchain.
+5. Node B starting with empty local projection state.
+6. Node B reconstructing the user's current repository from shared state.
+7. Node B serving a valid `com.atproto.sync.getRepo`.
+8. An unmodified ATProto consumer verifying that repository.
+9. A second mutation submitted through B, followed by A serving the resulting head on the **same canonical repository lineage**.
 
-**The first meaningful proof is a post originating from state persisted through Snapchain appearing and verifying correctly in an unmodified ATProto consumer/AppView.**
+> **Account state belongs to PurpleSky's shared substrate, not to a PurpleSky machine.**
 
-Two sync endpoints are an initial proof surface, not a complete PDS. Standard client auth, discovery, repo APIs, identity/account events, blobs, account lifecycle, moderation-related behavior, and operational limits still matter. Public AppView indexing depends on service discovery and ingestion policies as well as protocol correctness.
+At the same publication watermark, compare record CIDs, MST roots, revisions, and signed commit CIDs. Record the node/signer/consumer versions, procedure, CARs, and verification output. This proof tests interchangeable workers, not merely whether a backend can store a post.
+
+Expand to profile, post, follow, updates/deletes, simultaneous writes through A/B, retries, cache loss, protected-signer failover, key rotation, and import/export. Implement `com.atproto.sync.subscribeRepos` according to the [sync specification](https://atproto.com/specs/sync), including resumption across node changes, without gaps, ambiguous cursors, or competing histories.
+
+The original compatibility test still stands: **if an unmodified ATProto relay/AppView can consume and verify a PurpleSky repository, the abstraction is working.** Public AppView ingestion additionally depends on discovery and service policies. No distributed proof or full PDS implementation exists in this repository yet.
 
 ## Open questions
 
 1. What exactly should be canonical: Snapchain mutations or ATProto blocks?
 2. How should an FID ↔ DID binding be represented, proven, revoked, and updated after an FID transfer?
-3. Who controls and rotates the ATProto repo signing key, and who holds DID recovery authority?
+3. How do protected or distributed signing, key rotation, and fenced signer failover preserve one publisher, separately from DID/PLC rotation authority?
 4. Can repo reconstruction from Snapchain be fully deterministic, including the intended commit identity?
-5. How should conflicting/concurrent mutations, retries, and publication finality be resolved?
+5. How should finality, conflicting/concurrent mutations, retries, commit boundaries, and publication watermarks be resolved?
 6. How much Farcaster-native data can be represented directly using existing Lexicons?
 7. What recovery path exists if PurpleSky disappears or log history has been pruned?
 8. Can an account migrate to an ordinary PDS while retaining its DID and repository?
 9. Could the same substrate eventually expose both Farcaster-native and ATProto-native protocol views?
 10. Which Hypersnap network, mutation format, retention policy, and blob mechanism make this viable?
+11. How should the logical endpoint route requests and maintain shared auth/revocation, current reads, and resumable sync cursors across node changes?
 
 Protocol review, criticism, and small reproducible experiments are welcome in [issues](https://github.com/pierce403/psky/issues) and pull requests. This is an independent experiment, not an announced integration or endorsement by the underlying projects.
 
 ## Website development
 
-The site is plain semantic HTML, CSS, original SVG graphics, and a small optional motion control. There is no framework, build step, external font request, analytics, or runtime dependency. Navigation, diagrams, and the expandable technical note remain usable without JavaScript. Animation respects `prefers-reduced-motion` and can be paused.
+The site is plain semantic HTML, CSS, original SVG graphics, and a small optional motion control. There is no framework, build step, external font request, analytics, or runtime dependency. Navigation, diagrams, and expandable technical notes remain usable without JavaScript. The animated write enters B, is ordered and signed once, and becomes available at A/C as the same commit. It respects `prefers-reduced-motion`, can be paused, and remains a static diagram without JavaScript.
 
 Serve the repository root with any static server, for example:
 
@@ -159,6 +249,6 @@ python3 -m http.server 8000
 
 Open `http://localhost:8000`. Check desktop and narrow mobile layouts, keyboard navigation, the motion control, reduced motion, and JavaScript disabled. `social.svg` is the editable source for the 1200 × 630 social preview PNG; `favicon.svg` is the original node-based P mark, with PNG favicon and touch-icon fallbacks.
 
-GitHub Pages publishes the root of `main`. Preserve `CNAME` (`psky.org`) and `.nojekyll`. Changes to the proposal site are documentation and presentation work; they do not establish protocol interoperability.
+GitHub Pages publishes the root of `main`. Preserve `CNAME` (`psky.org`) and `.nojekyll`. To verify deployment, check that the Pages job checks out the intended `main` SHA and uploads the root (`path: .`), wait for a successful deploy, then compare live HTML/CSS/JS/image bytes with that commit. Investigate branch/source/domain configuration before attributing stale content to caching. Versioned asset URLs keep updated diagrams/styles together after deployment. Changes to the proposal site are documentation and presentation work; they do not establish protocol interoperability.
 
 Further primary sources: [ATProto specifications](https://atproto.com/specs/atp), [Hypersnap source](https://github.com/farcasterorg/hypersnap), [Snapchain source](https://github.com/farcasterxyz/snapchain).
