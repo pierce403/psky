@@ -12,6 +12,8 @@ PurpleSky proposes a **distributed ATProto Personal Data Server (PDS) backed by 
 
 Website: [psky.org](https://psky.org/)
 
+Implementation plan and acceptance criteria: [FEATURES.md](FEATURES.md).
+
 > **Existing ATProto implementations should not need to know that Snapchain exists.**
 
 The corresponding implementation test:
