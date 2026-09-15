@@ -5,40 +5,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="description"
-      content="PurpleSky proposes one logical ATProto PDS across many replaceable nodes, backed by shared Hypersnap/Snapchain state. ATProto over Snapchain. An experimental protocol proposal."
+      content="ATProto over Farcaster. One logical PDS, many replaceable nodes. Shared Farcaster state, standard ATProto. An experimental protocol proposal."
     />
     <meta name="theme-color" content="#0b0911" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="PurpleSky" />
-    <meta property="og:title" content="PurpleSky — ATProto over Snapchain" />
+    <meta property="og:title" content="PurpleSky — ATProto over Farcaster" />
     <meta
       property="og:description"
-      content="One logical PDS. Many replaceable nodes. Shared Snapchain state, standard ATProto. Explore the PurpleSky distributed PDS proposal."
+      content="One logical PDS. Many nodes. PurpleSky explores Farcaster as shared infrastructure for standard ATProto. An experimental protocol proposal."
     />
     <meta property="og:url" content="https://psky.org/" />
     <meta
       property="og:image"
-      content="https://psky.org/social.png?v=distributed-pds-1"
+      content="https://psky.org/social.png?v=farcaster-og-1"
     />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta
       property="og:image:alt"
-      content="PurpleSky. ATProto over Snapchain. Multiple PurpleSky workers share Snapchain state and serve one standard ATProto repository through one logical PDS."
+      content="PurpleSky — ATProto over Farcaster. One logical PDS. Many nodes. A purple-to-blue node constellation surrounds the PurpleSky mark."
     />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="PurpleSky — ATProto over Snapchain" />
+    <meta name="twitter:title" content="PurpleSky — ATProto over Farcaster" />
     <meta
       name="twitter:description"
-      content="An experimental distributed PDS proposal. Any node. Same repository. ATProto over Snapchain."
+      content="An experimental distributed PDS proposal. Any node. Same repository. ATProto over Farcaster."
     />
     <meta
       name="twitter:image"
-      content="https://psky.org/social.png?v=distributed-pds-1"
+      content="https://psky.org/social.png?v=farcaster-og-1"
     />
     <meta
       name="twitter:image:alt"
-      content="PurpleSky: ATProto over Snapchain. An experimental protocol proposal."
+      content="PurpleSky — ATProto over Farcaster. One logical PDS. Many nodes. A purple-to-blue node constellation surrounds the PurpleSky mark."
     />
     <link rel="canonical" href="https://psky.org/" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -46,7 +47,7 @@
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <link rel="stylesheet" href="style.css?v=distributed-pds-1" />
     <script src="script.js?v=distributed-pds-1" defer></script>
-    <title>PurpleSky — ATProto over Snapchain</title>
+    <title>PurpleSky — ATProto over Farcaster</title>
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>
@@ -76,17 +77,16 @@
             protocol proposal
           </p>
           <h1 id="hero-title">
-            ATProto over<br /><span class="gradient-text">Snapchain.</span>
+            ATProto over<br /><span class="gradient-text">Farcaster.</span>
           </h1>
           <p class="hero-lede">
-            Farcaster identity and Snapchain persistence, exposed as ordinary
-            ATProto. <strong>No bridge required.</strong>
+            Farcaster identity and persistence, exposed as ordinary ATProto.
+            <strong>No bridge required.</strong>
           </p>
           <p class="hero-detail">
             <strong>One logical PDS, many replaceable nodes.</strong> PurpleSky
             distributes an ATProto service across workers backed by shared
-            Hypersnap/Snapchain state. Your repository belongs to the shared
-            substrate.
+            Farcaster state. Your repository belongs to the shared substrate.
           </p>
           <div class="hero-actions">
             <a class="button primary" href="#architecture"
@@ -126,7 +126,7 @@
             </title>
             <desc id="network-desc">
               An ETH or Farcaster-authorized request enters the PurpleSky
-              logical PDS through node B. The shared Snapchain layer orders the
+              logical PDS through node B. The shared Farcaster layer orders the
               mutation. Deterministic projection and a protected signer produce
               one standard signed commit, C4. Nodes A and C reconstruct and
               serve that same canonical state. Relays, AppViews, and clients see
@@ -256,7 +256,7 @@
                 text-anchor="middle"
                 class="svg-label purple-label"
               >
-                Snapchain / Hypersnap
+                Farcaster
               </text>
               <text x="320" y="398" text-anchor="middle" class="svg-small">
                 Shared ordered state · mutation #18422
@@ -324,8 +324,8 @@
         <div class="wrap principle-inner">
           <span class="eyebrow">The invariant</span>
           <p>
-            Existing ATProto implementations should not need to know that
-            <strong>Snapchain exists.</strong>
+            Existing ATProto implementations should not need to understand
+            <strong>Farcaster.</strong>
           </p>
           <span class="invariant-symbol" aria-hidden="true">↔</span>
         </div>
@@ -338,12 +338,11 @@
         <div class="split idea-grid">
           <div class="prose">
             <p class="large-copy">
-              Farcaster identity. ATProto interoperability. Snapchain
-              persistence.
+              Farcaster as infrastructure. ATProto as the interface.
             </p>
             <p>
               PurpleSky proposes a distributed ATProto PDS implementation backed
-              by Hypersnap/Snapchain. It explores what happens when one
+              by the Farcaster protocol. It explores what happens when one
               decentralized protocol consumes another as infrastructure.
             </p>
             <p>
@@ -361,11 +360,11 @@
             <div
               class="composition-flow"
               role="img"
-              aria-label="Snapchain state branches into a proposed ATProto view, a possible Farcaster view, and a possible future protocol view."
+              aria-label="Farcaster state branches into a proposed ATProto view, a possible Farcaster view, and a possible future protocol view."
             >
               <div class="state-node">
                 <span class="tiny-label">Shared substrate</span
-                ><strong>Snapchain<br />state</strong
+                ><strong>Farcaster<br />state</strong
                 ><span class="state-blocks" aria-hidden="true">◇ ◇ ◇</span>
               </div>
               <div class="view-list">
@@ -454,7 +453,7 @@
               <span class="tiny-label"
                 >03 / Canonical replicated substrate</span
               >
-              <h3>Snapchain / Hypersnap</h3>
+              <h3>Farcaster</h3>
               <p>
                 Shared accepted mutations, ordering, and finality for
                 deterministic repo transitions
@@ -463,7 +462,7 @@
             <figcaption>
               Nodes submit mutations to shared ordering and reconstruct the same
               published repository state. The logical service routes requests;
-              no node permanently owns an account. Ordinary Snapchain peers do
+              no node permanently owns an account. Ordinary Farcaster nodes do
               not themselves become ATProto servers.
             </figcaption>
           </figure>
@@ -510,7 +509,7 @@
             <p>
               Precisely: PurpleSky presents a single logical PDS to ATProto
               while distributing its implementation across many nodes backed by
-              shared Snapchain state.
+              shared Farcaster state.
             </p>
             <p>
               Hosted PDS deployments can assign accounts to particular backends
@@ -546,7 +545,7 @@
             </div>
           </div>
           <div class="ordered-mutations">
-            <span class="tiny-label">Snapchain ordering / finality</span>
+            <span class="tiny-label">Farcaster ordering / finality</span>
             <div><code>#9001 follow</code><code>#9002 post</code></div>
           </div>
           <p class="projection-label">
@@ -637,7 +636,7 @@
             <h3>Normal repositories</h3>
             <p>
               Standard records, a Merkle Search Tree, and a signed commit.
-              Snapchain consensus does not replace the account’s ATProto repo
+              Ordering and finality do not replace the account’s ATProto repo
               signature.
             </p>
             <a class="source-link" href="https://atproto.com/specs/repository"
@@ -649,7 +648,7 @@
             <h3>Normal synchronization</h3>
             <p>
               Serve CAR exports and valid repository events, including resumable
-              streams and identity/account changes. No Snapchain-aware consumer
+              streams and identity/account changes. No Farcaster-aware consumer
               is required.
             </p>
             <a class="source-link" href="https://atproto.com/specs/sync"
@@ -855,7 +854,7 @@
                 ><code>did:plc:…</code
                 ><span class="migration-arrow" aria-hidden="true">↓</span
                 ><strong>PurpleSky logical PDS</strong
-                ><small>Distributed nodes + shared Snapchain state</small>
+                ><small>Distributed nodes + shared Farcaster state</small>
               </div>
             </div>
             <figcaption>
@@ -932,7 +931,7 @@
                   <span class="avatar" aria-hidden="true">A</span>
                   <h3>Alice</h3>
                   <span>PurpleSky logical PDS</span><code>FID 100 + DID</code
-                  ><small>Snapchain persistence</small>
+                  ><small>Farcaster persistence</small>
                 </div>
                 <div class="person bob">
                   <span class="avatar" aria-hidden="true">B</span>
@@ -995,15 +994,15 @@
               <span class="level-number">01</span
               ><span class="small-tag">Baseline</span>
             </div>
-            <h3>Snapchain as<br />a block store</h3>
+            <h3>Repository<br />block storage</h3>
             <p>
-              Create ordinary ATProto repositories first; store their blocks
-              through Hypersnap/Snapchain.
+              Create ordinary ATProto repositories first; explore storing their
+              blocks through the Farcaster network.
             </p>
             <ol class="level-flow">
               <li>ATProto records</li>
               <li>MST / CAR / blocks</li>
-              <li>Snapchain storage</li>
+              <li>Farcaster storage</li>
             </ol>
             <p class="level-verdict">
               Simplest conceptual adapter and closest to conventional storage.
@@ -1015,14 +1014,14 @@
               <span class="level-number">02</span
               ><span class="small-tag">Preferred research direction</span>
             </div>
-            <h3>Snapchain as<br />the event log</h3>
+            <h3>Canonical<br />event log</h3>
             <p>
-              Persist social mutations first; deterministically project their
-              state into a standard ATProto repository.
+              Use Farcaster as shared mutation infrastructure; deterministically
+              project accepted state into a standard ATProto repository.
             </p>
             <ol class="level-flow">
               <li>Social mutations</li>
-              <li>Snapchain</li>
+              <li>Farcaster</li>
               <li>Deterministic projection</li>
               <li>ATProto repository</li>
             </ol>
@@ -1055,7 +1054,10 @@
           <summary>Inside Level 2: what would be persisted?</summary>
           <div class="detail-content split">
             <div>
-              <p>Conceptual operations, not a defined Snapchain wire format:</p>
+              <p>
+                Conceptual projection operations, not existing Farcaster message
+                types:
+              </p>
               <pre><code>create app.bsky.feed.post/abc
 update app.bsky.actor.profile/self
 create app.bsky.graph.follow/xyz
@@ -1105,7 +1107,7 @@ delete app.bsky.feed.post/old</code></pre>
             <li>Authorize one user through an FID / Ethereum identity.</li>
             <li>Bind one ordinary <code>did:plc</code>.</li>
             <li>Submit a post through PurpleSky node A.</li>
-            <li>Persist and order its mutation through Hypersnap/Snapchain.</li>
+            <li>Persist and order its mutation through Farcaster.</li>
             <li>Start node B with empty local projection state.</li>
             <li>Have B reconstruct the current repo from shared state.</li>
             <li>Have B serve a valid <code>com.atproto.sync.getRepo</code>.</li>
@@ -1158,7 +1160,7 @@ delete app.bsky.feed.post/old</code></pre>
         <div class="questions-grid">
           <ol>
             <li>
-              What should be canonical: Snapchain mutations or ATProto blocks?
+              What should be canonical: Farcaster mutations or ATProto blocks?
             </li>
             <li>How should an FID ↔ DID binding be represented and proven?</li>
             <li>
@@ -1166,7 +1168,7 @@ delete app.bsky.feed.post/old</code></pre>
               commit without copying hot keys to every node?
             </li>
             <li>
-              Can repository reconstruction from Snapchain be fully
+              Can repository reconstruction from Farcaster be fully
               deterministic?
             </li>
             <li>
@@ -1191,8 +1193,8 @@ delete app.bsky.feed.post/old</code></pre>
               ATProto-native views?
             </li>
             <li>
-              Which Hypersnap network, mutation format, and retention policy can
-              support this?
+              Which Farcaster message types, storage limits, and retention
+              policy can support this?
             </li>
           </ol>
         </div>
@@ -1209,8 +1211,8 @@ delete app.bsky.feed.post/old</code></pre>
             </h2>
             <p>
               The Rust workspace now includes node preflight, offline repository
-              reconstruction, and a localhost console. Live network reconstruction
-              and a working PDS remain unproved.
+              reconstruction, and a localhost console. Live network
+              reconstruction and a working PDS remain unproved.
             </p>
             <p>
               Protocol review, criticism, and small reproducible experiments are
@@ -1242,13 +1244,12 @@ delete app.bsky.feed.post/old</code></pre>
             >.</span
           ></a
         >
-        <p>ATProto over Snapchain.</p>
+        <p>ATProto over Farcaster.</p>
       </div>
       <div class="footer-links">
         <a href="https://github.com/pierce403/psky">GitHub ↗</a
         ><a href="https://atproto.com/specs/atp">ATProto specs ↗</a
-        ><a href="https://github.com/farcasterorg/hypersnap">Hypersnap ↗</a
-        ><a href="https://github.com/farcasterxyz/snapchain">Snapchain ↗</a>
+        ><a href="https://docs.farcaster.xyz/">Farcaster protocol ↗</a>
       </div>
       <span class="footer-note">An independent protocol experiment.</span>
     </footer>
