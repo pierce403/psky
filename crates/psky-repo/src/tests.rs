@@ -1,4 +1,20 @@
 use super::*;
+
+#[test]
+fn localhost_development_dids_allow_only_canonical_port_suffixes() {
+    for did in ["did:web:localhost", "did:web:localhost%3A8787"] {
+        assert!(Repository::build(did, REV, &RecordSet::new(), &signer()).is_ok());
+    }
+    for did in [
+        "did:web:localhost:8787",
+        "did:web:localhost%3A0",
+        "did:web:localhost%3A08787",
+        "did:web:localhost%3A65536",
+        "did:web:localhost%3A8787:path",
+    ] {
+        assert!(Repository::build(did, REV, &RecordSet::new(), &signer()).is_err());
+    }
+}
 use proptest::prelude::*;
 use serde_json::json;
 use std::io::Cursor;

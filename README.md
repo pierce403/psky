@@ -8,7 +8,7 @@ Farcaster as infrastructure. ATProto as the interface.
 
 PurpleSky proposes a **distributed ATProto Personal Data Server (PDS) backed by the Farcaster protocol**. One logical service spans many replaceable nodes, preserving one canonical repository lineage per DID. Farcaster / Ethereum identities can participate natively in the ATmosphere. This is a protocol composition experiment: use one decentralized protocol as infrastructure for another.
 
-**Status: experimental implementation.** The Rust workspace provides read-only Farcaster node preflight, an offline repository reconstruction harness, and a localhost console. Live storage, Farcaster authentication, protected signing, and Bluesky login remain unimplemented. The distributed network PoC below has not been demonstrated.
+**Status: experimental implementation.** The Rust workspace provides node preflight, offline reconstruction, a localhost console, Farcaster sign-in, and revocable Bluesky password sessions. The official session SDK passes against a local fixture account. Live user consent, public identity resolution, social APIs, protected publishing, and network reconstruction remain unproven. See [account setup](docs/authentication.md). The distributed network PoC below has not been demonstrated.
 
 Website: [psky.org](https://psky.org/)
 

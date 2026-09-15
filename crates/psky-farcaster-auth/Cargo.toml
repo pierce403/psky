@@ -1,0 +1,26 @@
+[package]
+name = "psky-farcaster-auth"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.91"
+description = "Bounded Farcaster sign-in relay and on-chain identity verification for PurpleSky"
+license = "MIT"
+
+[dependencies]
+hex = "0.4.3"
+reqwest = { version = "0.12.28", default-features = false, features = ["rustls-tls"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.149"
+sha3 = "0.10.8"
+siwe = "=0.6.1"
+thiserror = "2.0.17"
+time = { version = "0.3", features = ["parsing", "formatting"] }
+url = "2.5.8"
+
+[dev-dependencies]
+k256 = { version = "0.13.4", features = ["ecdsa"] }
+tokio = { version = "1.52.3", features = ["macros", "rt-multi-thread", "net", "io-util", "time"] }
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"

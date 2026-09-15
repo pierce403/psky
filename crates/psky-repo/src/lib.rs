@@ -297,7 +297,8 @@ impl Repository {
     ///
     /// Syntax is checked but DID ownership, revision freshness and monotonicity,
     /// mutation finality, and authority to publish are the caller's responsibility.
-    /// Only normal `did:plc` or hostname-only `did:web` identifiers are accepted.
+    /// Accepts `did:plc`, hostname-only `did:web`, and explicit localhost
+    /// development DIDs (including a canonical `%3A` port suffix).
     pub fn build(
         did: &str,
         rev: &str,

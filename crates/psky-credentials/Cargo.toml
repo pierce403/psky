@@ -1,0 +1,30 @@
+[package]
+name = "psky-credentials"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.91"
+description = "Private single-account authentication authority for PurpleSky"
+license = "MIT"
+
+[dependencies]
+base64 = "0.22.1"
+bs58 = "0.5.1"
+hex = "0.4.3"
+hmac = "0.12.1"
+psky-repo = { path = "../psky-repo" }
+rand = "0.8.5"
+rusqlite = { version = "0.37.0", features = ["bundled"] }
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+sha2 = "0.10.9"
+subtle = "2.6.1"
+thiserror = "2.0.17"
+url = "2.5.7"
+zeroize = "1.8.2"
+
+[dev-dependencies]
+tempfile = "3.23.0"
+
+[lints.rust]
+unsafe_code = "forbid"
+missing_docs = "deny"

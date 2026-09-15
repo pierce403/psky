@@ -1,7 +1,7 @@
 //! PurpleSky's operator tools and **offline** reconstruction laboratory.
 //!
-//! No network write path or Farcaster login is implemented yet. The public
-//! listener rejects production PDS operations. [`lab`] exercises standard
+//! [`account`] supports Farcaster sign-in and revocable ATProto password
+//! sessions. No content write path is enabled. [`lab`] exercises standard
 //! repository construction with synthetic records; it does not claim that
 //! Hypersnap can persist these records. See `docs/storage-feasibility.md`.
 //!
@@ -10,6 +10,7 @@
 
 #![deny(missing_docs)]
 
+pub mod account;
 pub mod journal;
 pub mod lab;
 pub mod server;

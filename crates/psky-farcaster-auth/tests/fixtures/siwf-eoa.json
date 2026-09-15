@@ -1,0 +1,5 @@
+{
+  "address": "0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf",
+  "message": "pds.example wants you to sign in with your Ethereum account:\n0x7E5F4552091A69125d5DfCb7b8C2659029395Bdf\n\nFarcaster Auth\n\nURI: https://pds.example/onboard\nVersion: 1\nChain ID: 10\nNonce: 0123456789ABCDEF0123456789ABCDEF\nIssued At: 2026-02-02T02:40:00.000Z\nExpiration Time: 2026-02-02T02:45:00.000Z\nNot Before: 2026-02-02T02:40:00.000Z\nResources:\n- farcaster://fid/8531",
+  "signature": "0xf78e6f323afa76e01530700187ff2c54dd49417d066a9e5c0cec4f3e31398ee050775d6547e36049052e8f1e03996925b3bb94b00498ff97b0e43c96f449428d1c"
+}

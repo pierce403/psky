@@ -105,10 +105,11 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] Graceful shutdown preserves recovery progress and does not acknowledge unfinished writes.
 
 ### F-004: Farcaster authority and DID binding
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Authentication implementation and validation](docs/authentication.md). SIWF signatures and finalized authority are verified; one hostname-level did:web account is supported. Live user consent and public resolution remain unproven.
 - **Description**: Bind a proven Farcaster account to a standard ATProto identity.
 - **Properties**:
-  - Use a normal DID, preferably did:plc, with a stable public PDS service endpoint.
+  - Start with a hostname-level did:web and a stable public PDS service endpoint. Add did:plc provisioning and rotation separately.
   - Verify current FID authority; an associated wallet address or messaging signer alone does not grant account-management authority.
   - Define allowed custody/delegation proofs, challenge expiry, domain binding, replay prevention, and binding uniqueness.
   - Separate FID authentication, operational repository signing, and DID rotation authority.
@@ -204,7 +205,8 @@ visibility, capacity, and operator-approved test scope are established.
   - [ ] Unavailable history or corrupt recovery data produces a visible failure rather than fabricated state.
 
 ### F-010: Stock Bluesky authentication
-- **Stability**: planned
+- **Stability**: in-progress
+- **Evidence**: [Authentication implementation and validation](docs/authentication.md). The official password-session SDK passes against a local fixture account. This is not a live Farcaster login or a working stock-app timeline.
 - **Description**: Let an unmodified Bluesky client access a Farcaster-authorized account.
 - **Properties**:
   - Farcaster login authorizes issuance and revocation of scoped ATProto app passwords.

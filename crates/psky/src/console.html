@@ -62,6 +62,12 @@
             <div class="form-divider"></div>
             <div class="form-grid"><label>Management bind address<input id="setting-admin-bind" name="admin_bind" type="text" spellcheck="false" required><span class="field-help">Loopback only. Requires a process restart.</span></label><label>Public API bind address<input id="setting-public-bind" name="public_bind" type="text" spellcheck="false" required><span class="field-help">Requires a process restart.</span></label></div>
             <label class="checkbox-label"><input id="setting-fixture" name="serve_fixture" type="checkbox"><span>Serve the offline fixture CAR from the public API<small>Exposes only the documented public test repository.</small></span></label>
+            <div class="form-divider"></div>
+            <h3>Farcaster account login</h3>
+            <p class="field-help">One account per node for now. Sign-in proves identity; it does not approve a publishing signer. The FID and service address are fixed after binding.</p>
+            <div class="form-grid"><label>PDS service URL<input id="setting-account-url" type="url" placeholder="https://pds.psky.org" spellcheck="false"><span class="field-help">For local testing: http://localhost:8787. Public Bluesky login needs HTTPS.</span></label><label>Permitted Farcaster FID<input id="setting-account-fid" type="number" min="1" max="9007199254740991" step="1"><span class="field-help">This is an account allowlist, separate from the public-read test FID.</span></label><label>Optimism RPC origin<input id="setting-account-rpc" type="url" spellcheck="false" required><span class="field-help">Verifies custody and authentication keys against finalized chain state.</span></label></div>
+            <label class="checkbox-label"><input id="setting-account-enabled" type="checkbox"><span>Enable Farcaster login and app passwords<small>Session handshake only. Posting and social feeds are not ready.</small></span></label>
+            <p><a id="account-portal" href="#configuration">Open account portal ↗</a></p>
           </fieldset>
           <div class="form-actions"><span id="config-notice" class="subtle" role="status">Connect to load settings.</span><div><button id="reload-config" class="secondary" type="button" disabled>Reload saved</button><button id="save-config" type="submit" disabled>Save settings</button></div></div>
         </form>

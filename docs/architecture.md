@@ -5,12 +5,19 @@
 | `psky-hypersnap` | Bounded read-only node/account preflight | Authentication, canonical admission, durable recovery |
 | `psky-repo` | Deterministic records, MST, signed v3 commit, CAR export | PDS lifecycle or network storage |
 | `psky lab` | Independently reconstruct fixture state on A/B | Live two-worker PoC |
-| `psky serve` | Loopback console, health, opt-in fixture export | Stock Bluesky login, production writes, firehose |
+| `psky-farcaster-auth` | SIWF signatures and finalized registry authority | Live user consent, messaging-signer approval |
+| `psky-credentials` | Private app passwords, JWT sessions, empty signed repo | Shared revocation and protected publishing |
+| `psky serve` | Console, account portal, standard password sessions | Full stock app, production writes, firehose |
 
 The implementation deliberately exposes the unresolved storage gate. It does
 not create an alternative production content store. Before adding a live write
 path, establish the mapping and durability contract in F-001 and define how a
 fresh worker recovers from the approved network sources.
+
+The [account flow](authentication.md) stores only private identity, signature
+evidence, credential/session metadata and its empty-repo signing key locally.
+It does not store cast bodies or media. Its one-worker credential store is an
+explicit prototype dependency, not proof of a replaceable production worker.
 
 ## Repository laboratory
 

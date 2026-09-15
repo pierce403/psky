@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="referrer" content="no-referrer">
+  <title>PurpleSky | Your account</title>
+  <link rel="stylesheet" href="/account.css">
+  <script src="/account.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#sign-in">Skip to sign in</a>
+  <div class="shell">
+    <header class="site-header"><a class="brand" href="/account"><span class="brand-mark" aria-hidden="true">p</span>PurpleSky</a><span class="badge">Account access · Preview</span></header>
+    <main>
+      <section class="intro" aria-labelledby="page-title"><p class="eyebrow">YOUR IDENTITY, CONNECTED</p><h1 id="page-title">Farcaster in.<br>Bluesky login out.</h1><p>Verify your Farcaster identity, then create a password for this PDS.</p></section>
+      <div class="readiness-note"><span aria-hidden="true">◌</span><p><strong>Login preview.</strong> Feeds and posting are not ready. Signing in does not approve a publishing signer.</p></div>
+      <div class="account-grid">
+        <section id="sign-in" class="panel sign-in-panel" aria-labelledby="sign-in-title">
+          <div class="section-heading"><span class="step" aria-hidden="true">01</span><div><h2 id="sign-in-title">Verify with Farcaster</h2><p>No wallet keys or recovery phrase needed.</p></div></div>
+          <p id="notice" class="notice" role="status" aria-live="polite">Checking this node...</p>
+          <div id="login-pending" class="login-pending" hidden><img id="login-qr" alt="Scan this code with your Farcaster app to sign in" width="208" height="208" hidden><a id="login-link" class="button" target="_blank" rel="noopener noreferrer">Open Farcaster</a><p id="login-expiry" class="subtle">Waiting for approval...</p><p class="subtle">Only approve a request for this node's domain.</p></div>
+          <div id="identity" class="identity" hidden><span class="identity-mark" aria-hidden="true">✓</span><div><strong id="identity-handle"></strong><span id="identity-fid" class="subtle"></span></div><span class="badge success">Verified</span></div>
+          <div class="actions"><button id="login" type="button" disabled>Sign in with Farcaster</button><button id="disconnect" type="button" class="secondary" hidden>Disconnect</button><button id="retry-status" type="button" class="secondary" hidden>Retry connection</button></div>
+          <p class="footnote">This tab keeps account access in memory. Reloading or disconnecting clears it. Your Bluesky app passwords remain active until revoked.</p>
+        </section>
+        <aside class="panel node-panel" aria-labelledby="node-title"><div class="section-heading"><div><p class="eyebrow">THIS PDS</p><h2 id="node-title">Know where you sign in</h2></div></div><dl class="facts"><div><dt>Hosting provider</dt><dd id="service-url">Checking...</dd></div><div><dt>Account handle</dt><dd id="node-handle">Checking...</dd></div><div><dt>Farcaster storage</dt><dd>Reconstruction proof pending</dd></div><div><dt>Publishing signer</dt><dd>Not approved by sign-in</dd></div></dl><p class="footnote">Farcaster proves account ownership. The generated password is a separate, revocable credential for PurpleSky.</p></aside>
+      </div>
+      <section id="password-panel" class="panel password-panel" aria-labelledby="password-title" hidden>
+        <div class="section-heading"><span class="step" aria-hidden="true">02</span><div><h2 id="password-title">Create a Bluesky login password</h2><p>Use one password per app or device. You can revoke each one here.</p></div></div>
+        <form id="password-form"><label for="password-name">Device or app name</label><div class="input-action"><input id="password-name" type="text" maxlength="64" placeholder="Bluesky on my phone" autocomplete="off" required><button id="create-password" type="submit">Create password</button></div></form>
+        <p id="password-notice" class="notice" role="status" aria-live="polite"></p>
+        <section id="password-result" class="password-result" aria-labelledby="password-result-title" hidden><h3 id="password-result-title">Save this password now</h3><p>It is shown only once. PurpleSky cannot retrieve it later.</p><label for="new-password">App password</label><div class="secret-row"><input id="new-password" type="password" readonly autocomplete="off" spellcheck="false"><button id="reveal-password" type="button" class="secondary" aria-pressed="false">Show</button><button id="copy-password" type="button" class="secondary">Copy</button></div><p id="copy-notice" class="subtle" role="status" aria-live="polite"></p><ol class="login-steps"><li>In Bluesky, choose <strong>Sign in</strong>, then select a custom hosting provider.</li><li>Set the provider to <code id="result-service-url"></code>.</li><li>Use <code id="result-handle"></code> and the password above.</li></ol><p class="subtle">The login handshake is available. A working social account still needs the storage and AppView integrations.</p><button id="dismiss-password" type="button" class="quiet">Clear password from this tab</button></section>
+        <div class="password-list-heading"><h3>Your app passwords</h3><button id="refresh-passwords" type="button" class="quiet">Refresh</button></div><ul id="password-list" class="password-list" aria-label="App passwords"><li class="empty-state">Loading passwords...</li></ul>
+      </section>
+    </main>
+    <footer><span>PurpleSky · ATProto + Farcaster</span><a href="https://psky.org" target="_blank" rel="noopener noreferrer">Protocol proposal ↗</a></footer>
+  </div>
+  <noscript><p class="no-script">JavaScript is required for Farcaster sign-in and one-time password creation.</p></noscript>
+</body>
+</html>

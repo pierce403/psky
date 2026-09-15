@@ -1,6 +1,6 @@
 # Node management
 
-The console manages the implemented preflight and offline reconstruction tools.
+The console manages preflight, offline reconstruction and account login policy.
 It is not an account dashboard for a working PDS. Production readiness remains
 false even when peer checks and the local lab pass.
 
@@ -61,7 +61,8 @@ Freshness requires all reported shards, including shard 0, with nonzero heights
 and delays within the configured threshold. The default is 30 seconds. This is
 a timestamp heuristic, not proof of complete history, signatures, finality, or
 independent operation. Duplicate peer IDs cannot pass the distinct-peer check.
-At least two distinct healthy peers are needed for the planned live test.
+One healthy peer is enough to start live mapping and recovery tests. Two distinct
+healthy peers are needed to prove independent-node replication and failover.
 
 For a private remote node, an operator can run a local SSH forward, then add
 the local endpoint in Configuration. For example, when the remote Hypersnap API
@@ -109,14 +110,15 @@ Common problems:
 
 ## Work still required
 
-1. Obtain two recent, distinct live node observations, with an authorized test
-   identity before any writes.
+1. Obtain a recent healthy live node observation and an authorized test identity
+   before any writes. Add a second synced node for replication/failover tests.
 2. Specify and test native text-content mapping and exact recovery on unmodified
    Hypersnap, including ordering and pruning limits.
 3. Implement protected repo signing and durable identity/publication metadata.
 4. Prove A writes, empty B reconstructs, B writes, and A catches up. Verify all
    exports independently, then exercise retries, crashes and stale workers.
-5. Build Farcaster-backed login, stock-client APIs, and account management.
+5. Complete live consent and public identity checks for the implemented
+   [Farcaster login](authentication.md), then add stock-client social APIs.
 6. Prove media-byte availability separately, then add installation, upgrades,
    backup/recovery drills, and production monitoring.
 

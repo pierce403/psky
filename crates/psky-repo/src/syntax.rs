@@ -56,20 +56,26 @@ pub(crate) fn metadata(did: &str, rev: &str) -> Result<(), Error> {
                 .bytes()
                 .all(|c| c.is_ascii_lowercase() || (b'2'..=b'7').contains(&c))
     } else if let Some(domain) = did.strip_prefix("did:web:") {
-        domain.len() <= 253
-            && domain.contains('.')
-            && domain.split('.').all(|s| {
-                !s.is_empty()
-                    && s.len() <= 63
-                    && !s.starts_with('-')
-                    && !s.ends_with('-')
-                    && s.bytes()
-                        .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'-')
-            })
-            && domain
-                .rsplit('.')
-                .next()
-                .is_some_and(|s| s.bytes().any(|c| c.is_ascii_lowercase()))
+        let local = domain == "localhost"
+            || domain.strip_prefix("localhost%3A").is_some_and(|port| {
+                port.parse::<u16>()
+                    .is_ok_and(|number| number > 0 && number.to_string() == port)
+            });
+        local
+            || domain.len() <= 253
+                && domain.contains('.')
+                && domain.split('.').all(|s| {
+                    !s.is_empty()
+                        && s.len() <= 63
+                        && !s.starts_with('-')
+                        && !s.ends_with('-')
+                        && s.bytes()
+                            .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == b'-')
+                })
+                && domain
+                    .rsplit('.')
+                    .next()
+                    .is_some_and(|s| s.bytes().any(|c| c.is_ascii_lowercase()))
     } else {
         false
     };

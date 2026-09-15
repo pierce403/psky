@@ -138,6 +138,11 @@
       for (const [key, id] of Object.entries(fields)) byId(id).value = config.settings[key] ?? "";
       byId("setting-endpoints").value = config.settings.endpoints.join("\n");
       byId("setting-fixture").checked = config.settings.serve_fixture;
+      const account = config.settings.account || {};
+      byId("setting-account-url").value = account.service_url || "";
+      byId("setting-account-fid").value = account.allowed_fid ?? "";
+      byId("setting-account-rpc").value = account.optimism_rpc_url || "https://mainnet.optimism.io";
+      byId("setting-account-enabled").checked = Boolean(account.enabled);
       setText("config-revision", `Revision ${config.revision}`);
       configNotice("Saved configuration loaded.");
     }
@@ -145,6 +150,8 @@
     byId("restart-warning").hidden = !config.restart_required;
     setText("active-admin", config.active_listeners?.admin_bind || "Not reported");
     setText("active-public", config.active_listeners?.public_bind || "Not reported");
+    const service = config.settings.account?.service_url;
+    byId("account-portal").href = service ? `${service.replace(/\/$/, "")}/account` : "#configuration";
     renderPeers(state.latestStatus?.preflight);
     updateControls();
   }
@@ -157,6 +164,12 @@
   }
   function readConfig() {
     return {
+      account: {
+        enabled: byId("setting-account-enabled").checked,
+        service_url: byId("setting-account-url").value.trim(),
+        allowed_fid: fieldNumber("setting-account-fid", true),
+        optimism_rpc_url: byId("setting-account-rpc").value.trim(),
+      },
       node_name: byId("setting-node-name").value.trim(),
       endpoints: byId("setting-endpoints").value.split(/\r?\n/).map(item => item.trim()).filter(Boolean),
       network: byId("setting-network").value,

@@ -19,7 +19,11 @@ jobs:
         with:
           node-version: '22'
       - name: Test console state and asynchronous request races
-        run: node --test scripts/console.test.mjs
+        run: node --test scripts/console.test.mjs scripts/account.test.mjs
+      - name: Verify password sessions with the official Bluesky client library
+        run: |
+          npm ci --ignore-scripts --prefix crates/psky/interop
+          cargo test --locked -p psky account::tests::official_password_session_sdk -- --ignored
       - name: Verify Rust CAR exports with the official ATProto implementation
         run: |
           npm ci --ignore-scripts --prefix crates/psky-repo/interop

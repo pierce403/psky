@@ -40,6 +40,9 @@ pub const MAX_TEST_FID: u64 = 9_007_199_254_740_991;
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Settings {
+    /// Farcaster sign-in and the single hosted account. Disabled by default.
+    #[serde(default)]
+    pub account: AccountSettings,
     /// Display name, containing 1 through 64 characters and no control codes.
     pub node_name: String,
     /// Explicit Hypersnap HTTP API roots, without credentials or URL queries.
@@ -65,6 +68,7 @@ pub struct Settings {
 impl Default for Settings {
     fn default() -> Self {
         Self {
+            account: AccountSettings::default(),
             node_name: "PurpleSky".into(),
             endpoints: Vec::new(),
             network: Network::Mainnet,
@@ -86,6 +90,7 @@ impl Settings {
     /// literal loopback addresses or `localhost`, including local SSH tunnels.
     /// This validates address syntax, not whether a listener can bind its port.
     pub fn validate(&self) -> Result<(), SettingsError> {
+        self.account.validate()?;
         if self.node_name.trim().is_empty()
             || self.node_name.chars().count() > 64
             || self.node_name.chars().any(char::is_control)
@@ -157,6 +162,116 @@ impl Settings {
             })
             .and_then(|config| config.with_max_block_delay_secs(self.max_block_delay_seconds))
             .map_err(|_| SettingsError::Invalid("invalid Hypersnap endpoints or read limits"))
+    }
+}
+
+/// Public identity and read-only authentication services, managed through the console.
+///
+/// The initial implementation hosts one FID with a hostname-level `did:web`.
+/// Changing its identity after binding is rejected. No publishing key is requested.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct AccountSettings {
+    /// Enable the account portal and password/session endpoints.
+    pub enabled: bool,
+    /// Canonical HTTPS service origin; HTTP loopback is development-only.
+    pub service_url: String,
+    /// Sole FID permitted to bind this node; required when enabled.
+    pub allowed_fid: Option<u64>,
+    /// Optimism JSON-RPC origin used to verify current registry authority.
+    pub optimism_rpc_url: String,
+}
+
+impl Default for AccountSettings {
+    fn default() -> Self {
+        Self {
+            enabled: false,
+            service_url: String::new(),
+            allowed_fid: None,
+            optimism_rpc_url: "https://mainnet.optimism.io".into(),
+        }
+    }
+}
+
+impl AccountSettings {
+    /// Validate configuration without sending network requests.
+    pub fn validate(&self) -> Result<(), SettingsError> {
+        if self
+            .allowed_fid
+            .is_some_and(|fid| !(1..=MAX_TEST_FID).contains(&fid))
+            || (self.enabled && self.allowed_fid.is_none())
+        {
+            return Err(SettingsError::Invalid(
+                "account login requires a permitted FID",
+            ));
+        }
+        if self.service_url.is_empty() && !self.enabled {
+            return Self::origin(&self.optimism_rpc_url).map(|_| ());
+        }
+        let service = Self::origin(&self.service_url)?;
+        if service.host_str().is_none_or(|host| host.contains(':')) {
+            return Err(SettingsError::Invalid(
+                "account service requires a DNS hostname or IPv4 loopback",
+            ));
+        }
+        Self::origin(&self.optimism_rpc_url)?;
+        self.identity()?.validate().map_err(|_| {
+            SettingsError::Invalid(
+                "use a canonical HTTPS hostname, or http://localhost:port for development",
+            )
+        })?;
+        Ok(())
+    }
+
+    fn origin(value: &str) -> Result<url::Url, SettingsError> {
+        let invalid = || {
+            SettingsError::Invalid(
+                "account URLs must be HTTPS origins without credentials, paths or queries; HTTP loopback is allowed for development",
+            )
+        };
+        if value.len() > 2048 {
+            return Err(invalid());
+        }
+        let url = url::Url::parse(value).map_err(|_| invalid())?;
+        let loopback = url.host_str().is_some_and(|host| {
+            host == "localhost"
+                || host
+                    .parse::<std::net::IpAddr>()
+                    .is_ok_and(|ip| ip.is_loopback())
+        });
+        if !(url.scheme() == "https" || (url.scheme() == "http" && loopback))
+            || !url.username().is_empty()
+            || url.password().is_some()
+            || url.query().is_some()
+            || url.fragment().is_some()
+            || url.path() != "/"
+            || url.host_str().is_none()
+        {
+            return Err(invalid());
+        }
+        Ok(url)
+    }
+
+    /// Identity derived from the configured origin, without claiming a PLC DID.
+    pub fn identity(&self) -> Result<psky_credentials::Identity, SettingsError> {
+        let url = Self::origin(&self.service_url)?;
+        let host = url
+            .host_str()
+            .ok_or(SettingsError::Invalid("missing account hostname"))?;
+        let authority = match url.port() {
+            Some(port) => format!("{host}%3A{port}"),
+            None => host.to_owned(),
+        };
+        Ok(psky_credentials::Identity {
+            handle: if host == "localhost" {
+                "psky.test".to_owned()
+            } else {
+                host.to_owned()
+            },
+            did: format!("did:web:{authority}"),
+            service_did: format!("did:web:{authority}"),
+            service_url: url.origin().ascii_serialization(),
+        })
     }
 }
 

@@ -30,6 +30,7 @@ use subtle::ConstantTimeEq;
 use tokio::sync::{Mutex, Notify};
 
 use crate::{
+    account::{self, AccountNode},
     journal::{self, Journal, OPERATION_CAPACITY, Operation, OperationKind},
     lab,
     settings::{ConfigStore, Settings, SettingsError},
@@ -49,8 +50,9 @@ pub struct ConsoleConfig {
     pub store: ConfigStore,
 }
 
-/// Shared state scoped to one worker. No production account state lives here.
+/// Shared state scoped to one worker, with an isolated private credential store.
 pub struct ConsoleState {
+    account: Arc<AccountNode>,
     admin_addr: SocketAddr,
     public_addr: SocketAddr,
     data_dir: PathBuf,
@@ -89,6 +91,11 @@ impl ConsoleState {
         );
         let startup = config.store.snapshot().settings;
         startup.validate()?;
+        let account = AccountNode::open(
+            &config.data_dir,
+            startup.account.clone(),
+            config.public_addr,
+        )?;
         let mut journal = Journal::default();
         journal.push(
             "info",
@@ -98,6 +105,7 @@ impl ConsoleState {
         let mut instance = [0; 16];
         OsRng.fill_bytes(&mut instance);
         Ok(Arc::new(Self {
+            account,
             admin_addr: config.admin_addr,
             public_addr: config.public_addr,
             data_dir: config.data_dir,
@@ -360,6 +368,12 @@ pub fn admin_router(state: Arc<ConsoleState>) -> Router {
         .route("/admin/status", get(status))
         .route("/admin/config", get(config).put(update_config))
         .route("/admin/logs", get(logs))
+        .route(
+            "/admin/account/logs",
+            get(|State(state): State<Arc<ConsoleState>>| async move {
+                Json(state.account.events().await)
+            }),
+        )
         .route("/admin/operations", get(operations))
         .route("/admin/preflight", post(preflight))
         .route("/admin/reconstruct", post(reconstruct))
@@ -371,6 +385,7 @@ pub fn admin_router(state: Arc<ConsoleState>) -> Router {
 async fn status(State(state): State<Arc<ConsoleState>>) -> Json<Value> {
     let control = state.control.lock().await;
     let document = control.store.snapshot();
+    let account = state.account.status().await;
     Json(json!({
         "api_version": 1,
         "instance_id": state.instance_id,
@@ -383,8 +398,9 @@ async fn status(State(state): State<Arc<ConsoleState>>) -> Json<Value> {
         "mode": "preflight-and-offline-lab",
         "pds_ready": false,
         "storage_gate": "unmodified Hypersnap durability and payload mapping are not proven",
-        "account_binding": "not implemented",
-        "signer": "no production signer; laboratory uses a public fixture key",
+        "account_binding": if account["busy"] == true { "Account check in progress" } else if account["bound"] == true { "Farcaster-bound account" } else if account["enabled"] == true { "Awaiting Farcaster sign-in" } else { "Login disabled" },
+        "account": account,
+        "signer": "Publishing signer not configured; app passwords cannot publish yet",
         "publication_watermark": null,
         "operation_running": control.active.is_some(),
         "active_operation": control.active,
@@ -449,11 +465,16 @@ async fn update_config(
     if let Some(response) = unavailable(&control) {
         return response;
     }
+    let mut account_config = state.account.configuration().await;
+    if let Err(message) = account_config.check(&input.settings.account) {
+        return failure(StatusCode::BAD_REQUEST, "InvalidConfig", message);
+    }
     match control
         .store
         .replace(input.expected_revision, input.settings)
     {
         Ok(_) => {
+            account_config.apply(control.store.snapshot().settings.account);
             control.preflight = None;
             control.preflight_revision = None;
             control.last_check_at = None;
@@ -474,6 +495,7 @@ async fn update_config(
         }
         Err(SettingsError::Persistence(_)) => {
             if control.store.snapshot().revision != input.expected_revision {
+                account_config.apply(control.store.snapshot().settings.account);
                 control.preflight = None;
                 control.preflight_revision = None;
                 control.last_check_at = None;
@@ -642,6 +664,7 @@ struct RepoQuery {
 
 /// Public routes. Production writes always fail; fixture export is opt-in.
 pub fn public_router(state: Arc<ConsoleState>) -> Router {
+    let account_routes = account::router(state.account.clone());
     Router::new()
         .route(
             "/health",
@@ -652,6 +675,23 @@ pub fn public_router(state: Arc<ConsoleState>) -> Router {
             "/xrpc/com.atproto.sync.getRepo",
             get(
                 move |State(state): State<Arc<ConsoleState>>, query: Query<RepoQuery>| async move {
+                    if let Some(result) = state.account.repository(&query.did).await {
+                        return match result {
+                            Ok(car) => (
+                                [
+                                    ("content-type", "application/vnd.ipld.car"),
+                                    ("x-psky-evidence", "empty-account-repository"),
+                                ],
+                                Body::from(car),
+                            )
+                                .into_response(),
+                            Err(_) => failure(
+                                StatusCode::INTERNAL_SERVER_ERROR,
+                                "RepoError",
+                                "Could not read account metadata",
+                            ),
+                        };
+                    }
                     if !state
                         .control
                         .lock()
@@ -690,6 +730,7 @@ pub fn public_router(state: Arc<ConsoleState>) -> Router {
         )
         .fallback(not_ready)
         .with_state(state)
+        .merge(account_routes)
 }
 
 async fn not_ready() -> Response {

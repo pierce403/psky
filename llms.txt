@@ -53,6 +53,12 @@ expected_revision. There is no PATCH and unknown fields are rejected.
 {
   "expected_revision": 1,
   "settings": {
+    "account": {
+      "enabled": false,
+      "service_url": "",
+      "allowed_fid": null,
+      "optimism_rpc_url": "https://mainnet.optimism.io"
+    },
     "node_name": "PurpleSky",
     "endpoints": [],
     "network": "mainnet",
@@ -69,6 +75,11 @@ expected_revision. There is no PATCH and unknown fields are rejected.
 
 Fields and bounds:
 
+- account: disabled by default. Enable with a permitted FID and canonical HTTPS
+  service origin. http://localhost:port is disposable development only. The
+  service identity and FID cannot change after binding. Account changes apply
+  live and invalidate pending consent/grants. Always GET and preserve all fields
+  when editing settings; do not replace an existing configuration with this example.
 - node_name: 1 through 64 characters, no control codes or all-whitespace names.
 - endpoints: zero through eight distinct root URLs. HTTPS for remote peers;
   HTTP only for literal loopback addresses or localhost. No credentials, query,
@@ -117,7 +128,8 @@ Preflight reports distinguish reachable, version/network compatible, freshness
 (fresh, lagging, unknown), peer_unique, and healthy. Peer IDs and block delays are
 node-reported, not authenticated proof of independence, full sync, or finality.
 Missing shard data cannot pass health. Two URLs with the same peer ID do not count
-as two nodes. At least two distinct healthy peers are necessary for the planned
+as two nodes. One healthy peer is sufficient for initial mapping/recovery tests.
+Two distinct healthy peers are necessary for the planned independent-node
 live test, but they are not sufficient proof of durable reconstruction.
 
 ## Debug safely
@@ -138,11 +150,42 @@ live test, but they are not sufficient proof of durable reconstruction.
   Hypersnap just to turn a status green.
 
 The public /health endpoint is process liveness only. Public /ready is deliberately
-503 StorageContractUnproven. Production account auth, writes, signing and network
-recovery are not implemented. Do not point a real account DID at this node.
+503 StorageContractUnproven. Farcaster login and ATProto password sessions are
+implemented; content writes, AppView proxying and network recovery are not.
+Do not migrate an existing account to this node.
 serve_fixture exposes only
 /xrpc/com.atproto.sync.getRepo?did=did:plc:aaaaaaaaaaaaaaaaaaaaaaaa with
 X-Psky-Evidence: offline-fixture. A passing lab is not a network write/read proof.
+
+## Account interface
+
+The public listener serves /account, a Farcaster QR/link sign-in portal. It does
+not use the admin token. GET /account/status reports safe account readiness.
+POST /account/login with {} creates an expiring relay channel. Poll
+GET /account/login/{request_id} every 3 seconds with the returned poll_token as
+a bearer. Completion returns an account_token good for ten minutes. These are
+login permissions, not publishing-signer approval. Only the permitted FID can bind.
+
+Use that account bearer for GET /account/passwords, POST /account/passwords with
+{"name":"Phone"}, and DELETE /account/passwords with the same name. Generated
+password plaintext is returned once. Never store it in logs, reports, task
+messages or browser storage. Consent URLs/QRs and proof signatures are sensitive
+too. Do not complete a signature or signer approval on the user's behalf.
+
+The generated password works with com.atproto.server.createSession;
+getSession takes the access JWT, and refreshSession/deleteSession take the
+refresh JWT. Refresh rotates; logout or password revocation kills sessions.
+Farcaster authority is rechecked using finalized Optimism state and a maximum
+30-second positive cache. Finality and RPC freshness add delay. RPC failures
+fail closed, while proven custody/key revocation invalidates credentials.
+The SDK handshake is tested; a working stock-app timeline is not established.
+
+GET /admin/account/logs on the management listener, with its admin bearer,
+returns the latest 100 fixed-label account events. It never returns proof or
+credential bytes. This process-local buffer resets on restart. A busy response
+is retryable; do not spam polling or weaken authority checks to bypass it.
+See docs/authentication.md for limits, supported wallets, identity constraints,
+test commands, and the remaining public deployment/AppView/storage gates.
 
 ## References
 

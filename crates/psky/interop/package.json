@@ -1,0 +1,15 @@
+{
+  "name": "psky-session-interop",
+  "private": true,
+  "type": "module",
+  "description": "Official Bluesky password-session compatibility checks",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "verify": "node verify-session.mjs"
+  },
+  "dependencies": {
+    "@atproto/lex-password-session": "0.2.3"
+  }
+}

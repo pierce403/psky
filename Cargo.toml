@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/psky", "crates/psky-hypersnap", "crates/psky-repo"]
+members = ["crates/psky", "crates/psky-hypersnap", "crates/psky-repo", "crates/psky-farcaster-auth", "crates/psky-credentials"]
 resolver = "2"
 
 [profile.release]
