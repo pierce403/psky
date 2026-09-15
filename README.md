@@ -4,6 +4,6 @@ A protocol proposal exploring a fusion of atproto and Farcaster. Details to foll
 
 ## Website
 
-https://pierce403.github.io/psky/
+https://psky.org/
 
 The site is a single `index.html`, published through GitHub Pages from the root of `main`.
