@@ -1,32 +1,954 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="PurpleSky: a protocol proposal exploring a fusion of atproto and Farcaster.">
-    <meta name="theme-color" content="#171024">
-    <title>PurpleSky Protocol Proposal</title>
-    <style>
-      :root { color-scheme: dark; font-family: system-ui, sans-serif; background: #171024; color: #f2eafa; }
-      * { box-sizing: border-box; }
-      body { margin: 0; min-height: 100vh; display: grid; place-items: center; padding: 2rem; }
-      main { width: 100%; max-width: 42rem; }
-      .status { color: #c6a1f2; font-size: .8rem; letter-spacing: .15em; text-transform: uppercase; }
-      h1 { font-size: clamp(3rem, 12vw, 5rem); letter-spacing: -.06em; margin: 1rem 0; }
-      p { color: #c9bfd7; font-size: 1.15rem; line-height: 1.7; }
-      a { color: #d6b2ff; text-underline-offset: .25em; }
-      a:hover { color: #fff; }
-      a:focus-visible { outline: 2px solid #d6b2ff; outline-offset: 5px; }
-      footer { margin-top: 3rem; font-size: .9rem; }
-    </style>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="PurpleSky proposes an ATProto PDS backed by Hypersnap/Snapchain. Farcaster identity. ATProto interoperability. Snapchain persistence. An experimental protocol proposal."
+    />
+    <meta name="theme-color" content="#0b0911" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="PurpleSky" />
+    <meta property="og:title" content="PurpleSky — ATProto over Snapchain" />
+    <meta
+      property="og:description"
+      content="Farcaster identity and Snapchain persistence, exposed as ordinary ATProto. No bridge required. Explore the protocol proposal."
+    />
+    <meta property="og:url" content="https://psky.org/" />
+    <meta property="og:image" content="https://psky.org/social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="PurpleSky. ATProto over Snapchain. A purple and blue protocol graph connects Snapchain persistence to ordinary ATProto through a PurpleSky PDS."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="PurpleSky — ATProto over Snapchain" />
+    <meta
+      name="twitter:description"
+      content="An experimental PDS proposal. Farcaster identity. ATProto interoperability. Snapchain persistence."
+    />
+    <meta name="twitter:image" content="https://psky.org/social.png" />
+    <meta
+      name="twitter:image:alt"
+      content="PurpleSky: ATProto over Snapchain. An experimental protocol proposal."
+    />
+    <link rel="canonical" href="https://psky.org/" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon.png" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+    <title>PurpleSky — ATProto over Snapchain</title>
   </head>
   <body>
-    <main>
-      <span class="status">Protocol proposal · Coming soon</span>
-      <h1>PurpleSky</h1>
-      <p>A proposal exploring a fusion of atproto and the Farcaster protocols.</p>
-      <p>The proposal is taking shape. Details will follow.</p>
-      <footer><a href="https://github.com/pierce403/psky">Follow the proposal on GitHub</a></footer>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="wrap header-inner">
+        <a class="brand" href="#top" aria-label="PurpleSky home"
+          ><img src="favicon.svg" width="32" height="32" alt="" />PurpleSky<span
+            class="brand-dot"
+            aria-hidden="true"
+            >.</span
+          ></a
+        >
+        <nav aria-label="Main navigation">
+          <a href="#architecture">Architecture</a
+          ><a href="#integration">Integration</a
+          ><a href="#prototype">Prototype</a>
+        </nav>
+        <a class="header-github" href="https://github.com/pierce403/psky"
+          >GitHub <span aria-hidden="true">↗</span></a
+        >
+      </div>
+    </header>
+    <main id="main">
+      <section class="hero wrap" id="top" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span class="status-dot" aria-hidden="true"></span> Experimental
+            protocol proposal
+          </p>
+          <h1 id="hero-title">
+            ATProto over<br /><span class="gradient-text">Snapchain.</span>
+          </h1>
+          <p class="hero-lede">
+            Farcaster identity and Snapchain persistence, exposed as ordinary
+            ATProto. <strong>No bridge required.</strong>
+          </p>
+          <p class="hero-detail">
+            PurpleSky explores a new foundation for a familiar protocol: an
+            ATProto Personal Data Server backed by Hypersnap/Snapchain.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#architecture"
+              >Read the architecture <span aria-hidden="true">↘</span></a
+            ><a
+              class="button secondary"
+              href="https://github.com/pierce403/psky"
+              >GitHub <span aria-hidden="true">↗</span></a
+            >
+          </div>
+          <a
+            class="proposal-link"
+            href="https://github.com/pierce403/psky/blob/main/README.md"
+            >View protocol proposal <span aria-hidden="true">→</span></a
+          >
+        </div>
+        <figure class="hero-figure">
+          <div class="figure-heading">
+            <span>Fig. 01 / Proposed network</span
+            ><button
+              id="motion-toggle"
+              type="button"
+              aria-pressed="false"
+              hidden
+            >
+              Pause motion
+            </button>
+          </div>
+          <svg
+            class="hero-network"
+            viewBox="0 0 620 560"
+            role="img"
+            aria-labelledby="network-title network-desc"
+          >
+            <title id="network-title">
+              Snapchain persistence, ordinary ATProto participation
+            </title>
+            <desc id="network-desc">
+              Ethereum and Farcaster identity authorize a PurpleSky PDS.
+              Proposed mutations flow from replicated Snapchain nodes below,
+              through PurpleSky, into standard signed ATProto repositories and
+              the ATProto graph above and to the right. The ATProto network has
+              no Snapchain dependency.
+            </desc>
+            <defs>
+              <linearGradient id="network-gradient" x1="0" y1="1" x2="1" y2="0">
+                <stop stop-color="#b27aff" />
+                <stop offset="1" stop-color="#6ec8ff" />
+              </linearGradient>
+              <radialGradient id="network-glow">
+                <stop stop-color="#7f46dc" stop-opacity=".2" />
+                <stop offset="1" stop-color="#7f46dc" stop-opacity="0" />
+              </radialGradient>
+              <pattern
+                id="network-grid"
+                width="28"
+                height="28"
+                patternUnits="userSpaceOnUse"
+              >
+                <circle cx="1" cy="1" r=".8" fill="#aca2c6" opacity=".16" />
+              </pattern>
+              <marker
+                id="network-arrow"
+                viewBox="0 0 10 10"
+                refX="8"
+                refY="5"
+                markerWidth="5"
+                markerHeight="5"
+                orient="auto-start-reverse"
+              >
+                <path
+                  d="M1 1 8 5 1 9"
+                  fill="none"
+                  stroke="#82b9f5"
+                  stroke-width="1.5"
+                />
+              </marker>
+            </defs>
+            <rect width="620" height="560" fill="url(#network-grid)" />
+            <ellipse
+              cx="303"
+              cy="295"
+              rx="275"
+              ry="242"
+              fill="url(#network-glow)"
+            />
+            <g class="graph-edges graph-blue">
+              <path
+                d="M396 97 449 67 520 108 563 70M396 97 423 155 488 166 520 108 575 167M449 67 488 166 547 218 575 167M423 155 392 213 458 232 488 166M520 108 547 218M392 213 396 97M458 232 547 218"
+              />
+              <path
+                d="M449 67 477 28M563 70 586 106M575 167 598 209M547 218 577 258"
+                class="graph-faint"
+              />
+            </g>
+            <g class="graph-nodes graph-blue">
+              <circle cx="396" cy="97" r="5" />
+              <circle cx="449" cy="67" r="7" />
+              <circle cx="520" cy="108" r="8" />
+              <circle cx="563" cy="70" r="4" />
+              <circle cx="423" cy="155" r="7" />
+              <circle cx="488" cy="166" r="6" />
+              <circle cx="575" cy="167" r="5" />
+              <circle cx="392" cy="213" r="4" />
+              <circle cx="458" cy="232" r="6" />
+              <circle cx="547" cy="218" r="8" />
+              <circle cx="477" cy="28" r="3" />
+              <circle cx="586" cy="106" r="3" />
+              <circle cx="598" cy="209" r="3" />
+              <circle cx="577" cy="258" r="3" />
+            </g>
+            <text x="400" y="282" class="svg-label blue-label">ATProto</text>
+            <text x="400" y="303" class="svg-small">
+              The ordinary protocol graph
+            </text>
+            <g class="graph-edges graph-purple">
+              <path
+                d="M70 414 140 376 227 414 156 455 70 414 70 453 156 498 227 454 227 414M140 376 140 416 70 453M140 416 227 454M156 455 156 498M100 432 183 393M108 394 192 434"
+              />
+              <path
+                d="M30 437 70 414M227 454 266 477M156 498 156 523"
+                class="graph-faint"
+              />
+            </g>
+            <g class="graph-nodes graph-purple">
+              <circle cx="70" cy="414" r="6" />
+              <circle cx="140" cy="376" r="6" />
+              <circle cx="227" cy="414" r="6" />
+              <circle cx="156" cy="455" r="7" />
+              <circle cx="70" cy="453" r="5" />
+              <circle cx="140" cy="416" r="5" />
+              <circle cx="156" cy="498" r="6" />
+              <circle cx="227" cy="454" r="5" />
+            </g>
+            <text x="36" y="354" class="svg-label purple-label">Snapchain</text>
+            <text x="282" y="460" class="svg-small">Replicated state</text>
+            <text x="282" y="480" class="svg-small">Proposed mutation log</text>
+            <g class="identity-inputs">
+              <rect x="38" y="74" width="118" height="42" rx="21" />
+              <rect x="99" y="143" width="114" height="42" rx="21" />
+              <circle cx="61" cy="95" r="5" />
+              <circle cx="122" cy="164" r="5" />
+              <text x="77" y="101" class="svg-mono">ETH</text>
+              <text x="138" y="170" class="svg-mono">FID</text>
+              <path d="M99 116 122 143M213 164C252 164 269 198 280 225" />
+            </g>
+            <path
+              class="flow-track"
+              d="M227 414C303 414 220 336 269 322M366 265C398 265 365 155 423 155"
+              marker-end="url(#network-arrow)"
+            />
+            <path
+              class="flow-packet"
+              d="M227 414C303 414 220 336 269 322M366 265C398 265 365 155 423 155"
+            />
+            <g class="pds-core">
+              <rect
+                x="220"
+                y="222"
+                width="152"
+                height="106"
+                rx="19"
+                fill="#151020"
+                stroke="url(#network-gradient)"
+              />
+              <rect
+                x="228"
+                y="230"
+                width="136"
+                height="90"
+                rx="14"
+                fill="none"
+                stroke="#b58aee"
+                stroke-opacity=".12"
+              />
+              <path
+                d="M251 278V248H267L278 259 267 271H251"
+                fill="none"
+                stroke="url(#network-gradient)"
+                stroke-width="3"
+                stroke-linejoin="round"
+              />
+              <circle cx="251" cy="278" r="3" fill="#bb8cff" />
+              <circle cx="278" cy="259" r="3" fill="#77bfff" />
+              <text x="296" y="297" text-anchor="middle" class="svg-label">
+                PurpleSky
+              </text>
+              <text x="292" y="260" class="svg-small">PDS</text>
+            </g>
+            <g class="record-tag">
+              <rect x="352" y="352" width="242" height="45" rx="7" />
+              <circle cx="369" cy="375" r="3" />
+              <text x="382" y="380" class="svg-code">app.bsky.feed.post</text>
+            </g>
+            <path
+              d="M346 329 369 352"
+              stroke="#7696bb"
+              stroke-opacity=".5"
+              fill="none"
+              stroke-dasharray="3 5"
+            />
+            <text x="361" y="418" class="svg-small">
+              Standard records emerge here
+            </text>
+          </svg>
+          <figcaption>
+            <span class="legend-dot purple" aria-hidden="true"></span> Snapchain
+            inside <span class="caption-divider" aria-hidden="true">/</span
+            ><span class="legend-dot blue" aria-hidden="true"></span> ATProto
+            outside
+          </figcaption>
+        </figure>
+      </section>
+      <div class="principle-band">
+        <div class="wrap principle-inner">
+          <span class="eyebrow">The invariant</span>
+          <p>
+            Existing ATProto implementations should not need to know that
+            <strong>Snapchain exists.</strong>
+          </p>
+          <span class="invariant-symbol" aria-hidden="true">↔</span>
+        </div>
+      </div>
+      <section class="section wrap" id="idea" aria-labelledby="idea-title">
+        <div class="section-heading">
+          <p class="eyebrow">01 / The idea</p>
+          <h2 id="idea-title">One protocol.<br />Another foundation.</h2>
+        </div>
+        <div class="split idea-grid">
+          <div class="prose">
+            <p class="large-copy">
+              Farcaster identity. ATProto interoperability. Snapchain
+              persistence.
+            </p>
+            <p>
+              PurpleSky proposes an ATProto PDS implementation backed by
+              Hypersnap/Snapchain. It explores what happens when one
+              decentralized protocol consumes another as infrastructure.
+            </p>
+            <p>
+              This is protocol composition, not a service that copies Farcaster
+              posts into a second social graph. PurpleSky would publish native
+              ATProto records from its backing state. Clients, relays, and
+              AppViews see an ordinary PDS.
+            </p>
+            <p class="quiet">One social graph, multiple storage substrates.</p>
+          </div>
+          <figure class="composition panel">
+            <div class="figure-heading">
+              <span>Fig. 02 / Protocol composition</span>
+            </div>
+            <div
+              class="composition-flow"
+              role="img"
+              aria-label="Snapchain state branches into a proposed ATProto view, a possible Farcaster view, and a possible future protocol view."
+            >
+              <div class="state-node">
+                <span class="tiny-label">Shared substrate</span
+                ><strong>Snapchain<br />state</strong
+                ><span class="state-blocks" aria-hidden="true">◇ ◇ ◇</span>
+              </div>
+              <div class="view-list">
+                <div class="protocol-view muted-view">
+                  Farcaster view <span>Explore</span>
+                </div>
+                <div class="protocol-view active-view">
+                  ATProto view <span>PurpleSky</span>
+                </div>
+                <div class="protocol-view muted-view">
+                  Future protocol <span>Open question</span>
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              Conceptual views of one substrate. Shared native objects and the
+              additional views remain research questions.
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+      <section
+        class="section architecture-section"
+        id="architecture"
+        aria-labelledby="architecture-title"
+      >
+        <div class="wrap">
+          <div class="section-heading heading-row">
+            <div>
+              <p class="eyebrow">02 / Architecture</p>
+              <h2 id="architecture-title">The boundary is the design.</h2>
+            </div>
+            <p>
+              Everything beyond the PDS speaks ATProto.<br />Everything behind
+              it is an implementation choice.
+            </p>
+          </div>
+          <figure class="architecture panel">
+            <div class="figure-heading">
+              <span>Fig. 03 / Proposed PDS architecture</span
+              ><span class="small-tag">Level 2</span>
+            </div>
+            <div class="architecture-layout">
+              <div class="arch-identity">
+                <span class="tiny-label">Account authorization</span
+                ><strong>Farcaster / Ethereum</strong><code>FID / wallet</code>
+              </div>
+              <div class="pds-boundary">
+                <div class="boundary-label">
+                  <strong>PurpleSky PDS</strong
+                  ><span>Proposed implementation</span>
+                </div>
+                <div class="arch-layer api-layer">
+                  <span>01</span>
+                  <div>
+                    <strong>Standard ATProto API + sync</strong
+                    ><small>Repositories · CAR data · firehose</small>
+                  </div>
+                  <span aria-hidden="true">↔</span>
+                </div>
+                <div class="layer-connector" aria-hidden="true">↑</div>
+                <div class="arch-layer">
+                  <span>02</span>
+                  <div>
+                    <strong>Repository projection + signing</strong
+                    ><small>Records → MST → signed repo commit</small>
+                  </div>
+                </div>
+                <div class="layer-connector" aria-hidden="true">↑</div>
+                <div class="arch-layer">
+                  <span>03</span>
+                  <div>
+                    <strong>Hypersnap adapter</strong
+                    ><small>Proposed mutation encoding and replay</small>
+                  </div>
+                </div>
+              </div>
+              <div class="arch-network">
+                <span class="tiny-label">Standard ATProto boundary</span
+                ><strong>The ATmosphere</strong>
+                <p>
+                  Unmodified clients<br />Relays<br />AppViews<br />Other PDSs
+                </p>
+                <svg
+                  width="100"
+                  height="32"
+                  viewBox="0 0 100 32"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M9 23 35 7 63 23 91 7M9 23H63M35 7H91"
+                    fill="none"
+                    stroke="currentColor"
+                  />
+                  <g fill="#0b0911" stroke="currentColor">
+                    <circle cx="9" cy="23" r="4" />
+                    <circle cx="35" cy="7" r="4" />
+                    <circle cx="63" cy="23" r="4" />
+                    <circle cx="91" cy="7" r="4" />
+                  </g>
+                </svg>
+              </div>
+              <div class="arch-storage">
+                <span class="storage-glyph" aria-hidden="true">◇</span>
+                <div>
+                  <strong>Snapchain</strong
+                  ><span
+                    >Proposed canonical persistence / replicated mutation
+                    layer</span
+                  >
+                </div>
+              </div>
+            </div>
+            <figcaption>
+              Arrows show the projection/read path. Authorized writes would be
+              persisted before their ATProto commit is published.
+            </figcaption>
+          </figure>
+          <div class="architecture-notes">
+            <div>
+              <span class="tiny-label">Inside</span>
+              <p>
+                Snapchain mutations would be the source of truth; local
+                repository blocks and indexes would be materialized views.
+              </p>
+            </div>
+            <div>
+              <span class="tiny-label blue-text">Outside</span>
+              <p>
+                A normal DID, independently verifiable repo commits, standard
+                records, and ordinary synchronization.
+              </p>
+            </div>
+            <div>
+              <span class="tiny-label">Still to prove</span>
+              <p>
+                Mutation support, ordering, retention, and replay on the chosen
+                Hypersnap network. No arbitrary event-log capability is assumed.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section
+        class="section wrap"
+        id="compatibility"
+        aria-labelledby="compatibility-title"
+      >
+        <div class="section-heading">
+          <p class="eyebrow">03 / Compatibility</p>
+          <h2 id="compatibility-title">Why this can work.</h2>
+          <p>
+            The PDS abstraction separates a repository’s public contract from
+            its storage engine.
+          </p>
+        </div>
+        <div class="compatibility-grid">
+          <article>
+            <span class="feature-index">[ 01 ]</span>
+            <h3>Normal identities</h3>
+            <p>
+              Start with <code>did:plc</code>. The DID document identifies the
+              PDS and repo verification key; handles resolve through the usual
+              mechanisms.
+            </p>
+            <a class="source-link" href="https://atproto.com/specs/did"
+              >DID specification <span aria-hidden="true">↗</span></a
+            >
+          </article>
+          <article>
+            <span class="feature-index">[ 02 ]</span>
+            <h3>Normal repositories</h3>
+            <p>
+              Standard records, a Merkle Search Tree, and a signed commit.
+              Snapchain consensus does not replace the account’s ATProto repo
+              signature.
+            </p>
+            <a class="source-link" href="https://atproto.com/specs/repository"
+              >Repository specification <span aria-hidden="true">↗</span></a
+            >
+          </article>
+          <article>
+            <span class="feature-index">[ 03 ]</span>
+            <h3>Normal synchronization</h3>
+            <p>
+              Serve CAR exports and valid repository events, including resumable
+              streams and identity/account changes. No Snapchain-aware consumer
+              is required.
+            </p>
+            <a class="source-link" href="https://atproto.com/specs/sync"
+              >Sync specification <span aria-hidden="true">↗</span></a
+            >
+          </article>
+        </div>
+        <div class="contract-strip">
+          <span class="tiny-label">What the network verifies</span>
+          <div>
+            <code>DID + verification key</code><span aria-hidden="true">→</span
+            ><code>signed repo commit</code><span aria-hidden="true">→</span
+            ><code>MST</code><span aria-hidden="true">→</span
+            ><code>app.bsky.* records</code>
+          </div>
+        </div>
+        <p class="section-note">
+          The compatibility claim is a design constraint to test. A full PDS
+          also needs standard client auth, discovery, account lifecycle, blob
+          handling, and operational behavior. No modification to ATProto itself
+          is proposed.
+        </p>
+      </section>
+      <section
+        class="section wrap identity-section"
+        id="identity"
+        aria-labelledby="identity-title"
+      >
+        <div class="section-heading">
+          <p class="eyebrow">04 / Identity</p>
+          <h2 id="identity-title">
+            Farcaster at the root.<br />A DID on the network.
+          </h2>
+        </div>
+        <div class="identity-panel panel">
+          <div
+            class="identity-flow"
+            role="img"
+            aria-label="An Ethereum wallet proves authority for Farcaster FID 403, which binds to a PurpleSky account and a standard ATProto DID. Passkeys are possible future authentication for the PurpleSky account, not proof of FID ownership."
+          >
+            <div class="identity-step">
+              <span class="tiny-label">Authenticate</span
+              ><strong>ETH wallet</strong><code>0x…</code>
+            </div>
+            <span class="identity-arrow" aria-hidden="true">→</span>
+            <div class="identity-step">
+              <span class="tiny-label">Prove authority</span
+              ><strong>Farcaster FID</strong><code>403</code>
+            </div>
+            <span class="identity-arrow" aria-hidden="true">→</span>
+            <div class="identity-step identity-account">
+              <span class="tiny-label">Bind account</span
+              ><strong>PurpleSky</strong
+              ><span class="future-auth"
+                >Passkey? <small>Future auth</small></span
+              >
+            </div>
+            <span class="identity-arrow" aria-hidden="true">→</span>
+            <div class="identity-step">
+              <span class="tiny-label blue-text">Public identity</span
+              ><strong>ATProto DID</strong><code>did:plc:…</code>
+            </div>
+          </div>
+          <p class="identity-caption">
+            Illustrative mapping. The FID ↔ DID proof format, wallet-only
+            accounts, and account recovery are still open design decisions.
+          </p>
+        </div>
+        <div class="identity-notes">
+          <p>
+            Farcaster/ETH authenticates and authorizes the account. A separate
+            ATProto repo signing key produces standard commits. Key custody,
+            rotation, and DID recovery authority must be designed explicitly.
+          </p>
+          <p>
+            Use a currently interoperable ATProto DID mechanism, preferably
+            <code>did:plc</code>; do not introduce <code>did:farcaster</code>.
+            Wallet sign-in would live behind the PDS’s standard client
+            authorization flow.
+          </p>
+        </div>
+      </section>
+      <section
+        class="section graph-section"
+        id="one-graph"
+        aria-labelledby="graph-title"
+      >
+        <div class="wrap">
+          <div class="section-heading">
+            <p class="eyebrow">05 / Native participation</p>
+            <h2 id="graph-title">
+              Different storage.<br /><span class="blue-text"
+                >Same protocol graph.</span
+              >
+            </h2>
+            <p>
+              Follow, mention, reply. PurpleSky users and ordinary ATProto users
+              should interact through the same records and references.
+            </p>
+          </div>
+          <div class="split social-example">
+            <figure class="people-diagram panel">
+              <div class="people">
+                <div class="person alice">
+                  <span class="avatar" aria-hidden="true">A</span>
+                  <h3>Alice</h3>
+                  <span>PurpleSky PDS</span><code>FID 100 + DID</code
+                  ><small>Snapchain persistence</small>
+                </div>
+                <div class="person bob">
+                  <span class="avatar" aria-hidden="true">B</span>
+                  <h3>Bob</h3>
+                  <span>Ordinary PDS</span><code>DID</code
+                  ><small>Conventional storage</small>
+                </div>
+              </div>
+              <div class="shared-graph">
+                <span>ATProto</span><strong>One social graph</strong>
+              </div>
+              <figcaption>
+                Illustrative accounts. Neither side needs a translation gateway
+                for ordinary ATProto interactions.
+              </figcaption>
+            </figure>
+            <div class="follow-example">
+              <div class="code-heading">
+                <span class="tiny-label">Alice follows Bob</span
+                ><span class="small-tag">Standard Lexicon</span>
+              </div>
+              <pre><code>{
+  <span class="code-key">"$type"</span>: <span class="code-value">"app.bsky.graph.follow"</span>,
+  <span class="code-key">"subject"</span>: <span class="code-value">"did:plc:bbbbbbbbbbbbbbbbbbbbbbbb"</span>,
+  <span class="code-key">"createdAt"</span>: <span class="code-value">"2026-09-15T00:00:00Z"</span>
+}</code></pre>
+              <p>
+                Published in Alice’s repository. The subject is Bob’s ATProto
+                DID; the record needs no FID or storage-specific field.
+              </p>
+              <small
+                >Example only; Bob’s DID is a non-resolving placeholder.</small
+              >
+            </div>
+          </div>
+          <p class="research-question">
+            Can two fundamentally different storage architectures participate
+            transparently in the same ATProto social graph?
+          </p>
+        </div>
+      </section>
+      <section
+        class="section wrap"
+        id="integration"
+        aria-labelledby="integration-title"
+      >
+        <div class="section-heading heading-row">
+          <div>
+            <p class="eyebrow">06 / Integration depth</p>
+            <h2 id="integration-title">Three ways in.</h2>
+          </div>
+          <p>
+            Start with interoperability.<br />Explore how deep the composition
+            can go.
+          </p>
+        </div>
+        <div class="levels">
+          <article class="level">
+            <div class="level-top">
+              <span class="level-number">01</span
+              ><span class="small-tag">Baseline</span>
+            </div>
+            <h3>Snapchain as<br />a block store</h3>
+            <p>
+              Create ordinary ATProto repositories first; store their blocks
+              through Hypersnap/Snapchain.
+            </p>
+            <ol class="level-flow">
+              <li>ATProto records</li>
+              <li>MST / CAR / blocks</li>
+              <li>Snapchain storage</li>
+            </ol>
+            <p class="level-verdict">
+              Simplest conceptual adapter and closest to conventional storage.
+              Still needs a viable storage mechanism.
+            </p>
+          </article>
+          <article class="level preferred">
+            <div class="level-top">
+              <span class="level-number">02</span
+              ><span class="small-tag">Preferred research direction</span>
+            </div>
+            <h3>Snapchain as<br />the event log</h3>
+            <p>
+              Persist social mutations first; deterministically project their
+              state into a standard ATProto repository.
+            </p>
+            <ol class="level-flow">
+              <li>Social mutations</li>
+              <li>Snapchain</li>
+              <li>Deterministic projection</li>
+              <li>ATProto repository</li>
+            </ol>
+            <p class="level-verdict">
+              The replicated substrate is canonical. ATProto is its
+              interoperable representation.
+            </p>
+          </article>
+          <article class="level">
+            <div class="level-top">
+              <span class="level-number">03</span
+              ><span class="small-tag">Longer-term question</span>
+            </div>
+            <h3>Shared native<br />protocol objects</h3>
+            <p>
+              Could one user-signed social operation be meaningful to both
+              protocols directly?
+            </p>
+            <div class="shared-operation">
+              <span>Signed social operation</span>
+              <div><span>Farcaster</span><span>ATProto</span></div>
+            </div>
+            <p class="level-verdict">
+              Do not start here. Identity, signing, repository, and message
+              semantics differ today.
+            </p>
+          </article>
+        </div>
+        <details class="technical-detail">
+          <summary>Inside Level 2: what would be persisted?</summary>
+          <div class="detail-content split">
+            <div>
+              <p>Conceptual operations, not a defined Snapchain wire format:</p>
+              <pre><code>create app.bsky.feed.post/abc
+update app.bsky.actor.profile/self
+create app.bsky.graph.follow/xyz
+delete app.bsky.feed.post/old</code></pre>
+            </div>
+            <div>
+              <p>
+                The event envelope would need record content, stable keys,
+                authorization, ordering, timestamps, and versioned projection
+                rules. The adapter must first establish how the chosen network
+                accepts and retains these operations.
+              </p>
+              <p>
+                Identical records can reproduce the MST root. Identical signed
+                commits additionally require fixed commit metadata and a signing
+                strategy or retained signed commit bytes. Replay alone does not
+                recover private signing keys.
+              </p>
+              <p>
+                Pruning, deletion, snapshots, media availability, and migration
+                need explicit policies before this can be a durable source of
+                truth.
+              </p>
+            </div>
+          </div>
+        </details>
+      </section>
+      <section
+        class="section prototype-section"
+        id="prototype"
+        aria-labelledby="prototype-title"
+      >
+        <div class="wrap">
+          <div class="section-heading heading-row">
+            <div>
+              <p class="eyebrow">07 / First proof</p>
+              <h2 id="prototype-title">Small enough to prove.</h2>
+            </div>
+            <span class="status-label"
+              ><span class="status-dot" aria-hidden="true"></span> All
+              milestones proposed</span
+            >
+          </div>
+          <ol class="milestones">
+            <li>
+              <span class="milestone-number">01</span>
+              <h3>One identity</h3>
+              <p>1 FID ↔ 1 DID<br />Farcaster / ETH login</p>
+            </li>
+            <li>
+              <span class="milestone-number">02</span>
+              <h3>One mutation log</h3>
+              <p>Snapchain persistence<br />Profile · post · follow</p>
+            </li>
+            <li>
+              <span class="milestone-number">03</span>
+              <h3>One valid repo</h3>
+              <p>Records → MST<br />Standard repo signature</p>
+            </li>
+            <li>
+              <span class="milestone-number">04</span>
+              <h3>One consumer</h3>
+              <p>
+                <code>getRepo</code> + <code>subscribeRepos</code
+                ><br />Unmodified ATProto reader
+              </p>
+            </li>
+          </ol>
+          <div class="acceptance-test">
+            <span class="tiny-label">The acceptance test</span>
+            <blockquote>
+              If an unmodified ATProto relay/AppView can consume and verify a
+              PurpleSky repository, the abstraction is working.
+            </blockquote>
+            <p>
+              The first meaningful proof: a post originating from state
+              persisted through Snapchain appears and verifies correctly in an
+              unmodified ATProto consumer/AppView.
+            </p>
+          </div>
+          <p class="section-note">
+            First prove the adapter can persist and replay the required
+            operations. Then publish through
+            <code>com.atproto.sync.getRepo</code> and
+            <code>com.atproto.sync.subscribeRepos</code>, test restart/replay
+            and stream resumption, and verify with existing software. Public
+            AppView indexing also depends on discovery and service policies.
+          </p>
+        </div>
+      </section>
+      <section
+        class="section wrap"
+        id="questions"
+        aria-labelledby="questions-title"
+      >
+        <div class="section-heading">
+          <p class="eyebrow">08 / Open research</p>
+          <h2 id="questions-title">
+            The interesting questions<br />are still open.
+          </h2>
+          <p>
+            These are design decisions to investigate, not capabilities already
+            delivered.
+          </p>
+        </div>
+        <div class="questions-grid">
+          <ol>
+            <li>
+              What should be canonical: Snapchain mutations or ATProto blocks?
+            </li>
+            <li>How should an FID ↔ DID binding be represented and proven?</li>
+            <li>Who controls and rotates the ATProto repo signing key?</li>
+            <li>
+              Can repository reconstruction from Snapchain be fully
+              deterministic?
+            </li>
+            <li>How should conflicting or concurrent mutations be resolved?</li>
+          </ol>
+          <ol start="6">
+            <li>
+              How much Farcaster-native data fits existing Lexicons directly?
+            </li>
+            <li>What recovery path exists if PurpleSky disappears?</li>
+            <li>
+              Can an account migrate to an ordinary PDS while retaining its DID
+              and repository?
+            </li>
+            <li>
+              Could the same substrate expose both Farcaster-native and
+              ATProto-native views?
+            </li>
+            <li>
+              Which Hypersnap network, mutation format, and retention policy can
+              support this?
+            </li>
+          </ol>
+        </div>
+      </section>
+      <section class="section wrap" id="status" aria-labelledby="status-title">
+        <div class="status-panel">
+          <div>
+            <p class="eyebrow">
+              <span class="status-dot" aria-hidden="true"></span> Experimental /
+              Proposal stage
+            </p>
+            <h2 id="status-title">
+              A proposal, with room<br />for better questions.
+            </h2>
+            <p>
+              Implementation work is beginning with the design. This repository
+              currently contains the proposal site and documentation; a working
+              PDS and the interoperability proof are not implemented here.
+            </p>
+            <p>
+              Protocol review, criticism, and small reproducible experiments are
+              welcome.
+            </p>
+          </div>
+          <div class="status-actions">
+            <a
+              class="button primary"
+              href="https://github.com/pierce403/psky/issues"
+              >Review the proposal <span aria-hidden="true">↗</span></a
+            ><a
+              class="proposal-link"
+              href="https://github.com/pierce403/psky/blob/main/README.md"
+              >Read the technical overview <span aria-hidden="true">→</span></a
+            ><span class="status-footnote"
+              >Research implementation planned.<br />Not production-ready.</span
+            >
+          </div>
+        </div>
+      </section>
     </main>
+    <footer class="site-footer wrap">
+      <div>
+        <a class="brand" href="#top"
+          ><img src="favicon.svg" width="28" height="28" alt="" />PurpleSky<span
+            class="brand-dot"
+            aria-hidden="true"
+            >.</span
+          ></a
+        >
+        <p>ATProto over Snapchain.</p>
+      </div>
+      <div class="footer-links">
+        <a href="https://github.com/pierce403/psky">GitHub ↗</a
+        ><a href="https://atproto.com/specs/atp">ATProto specs ↗</a
+        ><a href="https://github.com/farcasterorg/hypersnap">Hypersnap ↗</a
+        ><a href="https://github.com/farcasterxyz/snapchain">Snapchain ↗</a>
+      </div>
+      <span class="footer-note">An independent protocol experiment.</span>
+    </footer>
   </body>
 </html>

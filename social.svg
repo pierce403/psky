@@ -1,0 +1,159 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  width="1200"
+  height="630"
+  viewBox="0 0 1200 630"
+>
+  <title>PurpleSky — ATProto over Snapchain</title>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="1" x2="1" y2="0">
+      <stop stop-color="#c69af8" />
+      <stop offset="1" stop-color="#7ecbff" />
+    </linearGradient>
+    <radialGradient id="glow">
+      <stop stop-color="#563276" stop-opacity=".35" />
+      <stop offset="1" stop-color="#563276" stop-opacity="0" />
+    </radialGradient>
+    <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="1" cy="1" r=".8" fill="#bcaed4" opacity=".15" />
+    </pattern>
+  </defs>
+  <rect width="1200" height="630" fill="#0b0911" />
+  <rect x="610" width="590" height="630" fill="url(#grid)" />
+  <ellipse cx="865" cy="300" rx="350" ry="350" fill="url(#glow)" />
+  <g font-family="DejaVu Sans, sans-serif">
+    <g transform="translate(64 49)">
+      <rect width="45" height="45" rx="12" fill="#1f152c" />
+      <path
+        d="M14 35V11H25L34 20 25 28H14"
+        fill="none"
+        stroke="url(#sky)"
+        stroke-width="3.5"
+        stroke-linejoin="round"
+      />
+      <circle cx="14" cy="35" r="3" fill="#c493ff" />
+      <circle cx="34" cy="20" r="3" fill="#7ecbff" />
+    </g>
+    <text x="122" y="81" font-size="27" fill="#f5f0fa">
+      PurpleSky
+      <tspan fill="#c19af5">.</tspan>
+    </text>
+    <circle cx="71" cy="163" r="4" fill="#c19af5" />
+    <text
+      x="87"
+      y="168"
+      font-family="DejaVu Sans Mono, monospace"
+      font-size="13"
+      letter-spacing="1.5"
+      fill="#c19af5"
+    >
+      EXPERIMENTAL PROTOCOL PROPOSAL
+    </text>
+    <text x="61" y="268" font-size="69" letter-spacing="-3" fill="#f5f0fa">
+      ATProto over
+    </text>
+    <text x="61" y="350" font-size="76" letter-spacing="-3" fill="url(#sky)">
+      Snapchain.
+    </text>
+    <text x="65" y="409" font-size="20" fill="#c6bdd3">
+      Farcaster identity. Snapchain persistence.
+    </text>
+    <text x="65" y="442" font-size="20" fill="#c6bdd3">
+      Exposed as ordinary ATProto.
+    </text>
+    <text x="65" y="480" font-size="20" fill="#ede4f8">
+      No bridge required.
+    </text>
+    <g fill="none" stroke="#7abaf0" stroke-opacity=".45">
+      <path
+        d="M895 120 960 77 1041 118 1113 69M895 120 921 191 1014 205 1041 118 1142 169M960 77 1014 205 1096 250 1142 169M921 191 866 237 981 267 1014 205M1041 118 1096 250"
+      />
+    </g>
+    <g fill="#131a27" stroke="#84bdec" stroke-width="1.5">
+      <circle cx="895" cy="120" r="6" />
+      <circle cx="960" cy="77" r="7" />
+      <circle cx="1041" cy="118" r="9" />
+      <circle cx="1113" cy="69" r="5" />
+      <circle cx="921" cy="191" r="7" />
+      <circle cx="1014" cy="205" r="7" />
+      <circle cx="1142" cy="169" r="6" />
+      <circle cx="1096" cy="250" r="8" />
+      <circle cx="866" cy="237" r="5" />
+      <circle cx="981" cy="267" r="6" />
+    </g>
+    <g fill="none" stroke="#a974d6" stroke-opacity=".65">
+      <path
+        d="M693 450 775 405 867 450 785 496 693 450V493L785 541 867 494V450M775 405V449L693 493M775 449 867 494M785 496V541"
+      />
+    </g>
+    <g fill="#1a1128" stroke="#b786e3" stroke-width="1.5">
+      <circle cx="693" cy="450" r="6" />
+      <circle cx="775" cy="405" r="6" />
+      <circle cx="867" cy="450" r="7" />
+      <circle cx="785" cy="496" r="7" />
+      <circle cx="693" cy="493" r="5" />
+      <circle cx="775" cy="449" r="5" />
+      <circle cx="785" cy="541" r="6" />
+      <circle cx="867" cy="494" r="6" />
+    </g>
+    <path
+      d="M867 450C922 421 817 389 846 349M916 320C964 320 860 191 921 191"
+      stroke="url(#sky)"
+      fill="none"
+      stroke-width="2"
+    />
+    <rect
+      x="757"
+      y="275"
+      width="165"
+      height="82"
+      rx="13"
+      fill="#1a1324"
+      stroke="url(#sky)"
+    />
+    <text x="839" y="309" font-size="23" text-anchor="middle" fill="#f4eafa">
+      PurpleSky
+    </text>
+    <text
+      x="839"
+      y="335"
+      font-family="DejaVu Sans Mono, monospace"
+      font-size="12"
+      text-anchor="middle"
+      fill="#bca5d5"
+    >
+      STANDARD PDS
+    </text>
+    <text x="993" y="305" font-size="20" fill="#8acaff">ATProto</text>
+    <text x="660" y="388" font-size="20" fill="#c19af5">Snapchain</text>
+    <text
+      x="942"
+      y="428"
+      font-family="DejaVu Sans Mono, monospace"
+      font-size="12"
+      fill="#9bc8ee"
+    >
+      app.bsky.feed.post
+    </text>
+    <path d="M64 566H1136" stroke="#35273f" />
+    <text
+      x="65"
+      y="597"
+      font-family="DejaVu Sans Mono, monospace"
+      font-size="12"
+      fill="#a99bb8"
+    >
+      ONE SOCIAL GRAPH. MULTIPLE STORAGE SUBSTRATES.
+    </text>
+    <text
+      x="1135"
+      y="597"
+      text-anchor="end"
+      font-family="DejaVu Sans Mono, monospace"
+      font-size="13"
+      fill="#c19af5"
+    >
+      psky.org
+    </text>
+  </g>
+</svg>
