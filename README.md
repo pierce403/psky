@@ -257,3 +257,11 @@ Open `http://localhost:8000`. Check desktop and narrow mobile layouts, keyboard 
 GitHub Pages publishes the root of `main`. Preserve `CNAME` (`psky.org`) and `.nojekyll`. To verify deployment, check that the Pages job checks out the intended `main` SHA and uploads the root (`path: .`), wait for a successful deploy, then compare live HTML/CSS/JS/image bytes with that commit. Investigate branch/source/domain configuration before attributing stale content to caching. Versioned asset URLs keep updated diagrams/styles together after deployment. Changes to the proposal site are documentation and presentation work; they do not establish protocol interoperability.
 
 Further primary sources: [ATProto specifications](https://atproto.com/specs/atp), [Farcaster protocol documentation](https://docs.farcaster.xyz/). Implementation-specific references and constraints are in [FEATURES.md](FEATURES.md).
+
+## Cloudflare publishing
+
+Native Cloudflare Git builds publish `main`. Validate with `npm ci` and
+`npm run check:deploy`; build uses `npm run build`, deployment `npm run deploy`.
+Only the reviewed public file list is copied to `dist`; original public content
+and GitHub Pages recovery remain. Credentials stay in Cloudflare and previews
+are disabled. The revision is at `/.well-known/cloudflare-build.json`.
