@@ -11,5 +11,6 @@
   },
   "dependencies": {
     "@atproto/lex-password-session": "0.2.3"
-  }
+  },
+  "license": "Apache-2.0"
 }

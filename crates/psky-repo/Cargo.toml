@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.91"
 description = "Deterministic ATProto repository primitives for the PurpleSky offline harness"
-license = "MIT"
+license = "Apache-2.0"
 
 [dependencies]
 base64 = "0.22.1"

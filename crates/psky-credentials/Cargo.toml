@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 rust-version = "1.91"
 description = "Private single-account authentication authority for PurpleSky"
-license = "MIT"
+license = "Apache-2.0"
 
 [dependencies]
 base64 = "0.22.1"

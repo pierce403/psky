@@ -265,3 +265,9 @@ Native Cloudflare Git builds publish `main`. Validate with `npm ci` and
 Only the reviewed public file list is copied to `dist`; original public content
 and GitHub Pages recovery remain. Credentials stay in Cloudflare and previews
 are disabled. The revision is at `/.well-known/cloudflare-build.json`.
+
+## License
+
+Copyright 2026 Dean Pierce.
+
+The original code and documentation authored for this project are licensed under the [Apache License, Version 2.0](LICENSE). Third-party dependencies, quoted source material, data, fonts, media, and other third-party assets retain their respective licenses and rights; this grant does not relicense them.
